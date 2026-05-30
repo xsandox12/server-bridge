@@ -1,0 +1,20 @@
+services:
+  server-bridge:
+    build: .
+    container_name: server-bridge
+    ports:
+      - "5500:3000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/xsandox:/home/xsandox
+      - server-bridge-data:/data
+    environment:
+      - NODE_ENV=production
+      - WORKSPACE_ROOT=/home/xsandox
+      - DATA_DIR=/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  server-bridge-data:
