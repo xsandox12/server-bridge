@@ -86,6 +86,34 @@ if (existing.cnt === 0) {
   insertDomain.run('agonyang-com', 'agonyang', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
 }
 
+// agonyang → main + chzzk-analyze 분리
+db.prepare(`UPDATE projects SET
+  name = 'main (agonyang.com)',
+  deploy_cmd = 'docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml build nginx && docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml up -d nginx'
+  WHERE id = 'agonyang'`).run()
+
+// main 도메인만 agonyang에 남기고, chzzk-analyze 도메인은 새 프로젝트로 이동
+db.prepare(`UPDATE domains SET project_id = 'agonyang', env = 'test',  url = 'http://' || COALESCE(?, 'localhost') || ':4000/'
+  WHERE id = 'agonyang-nginx'`).run(process.env.MINIPC_HOST ?? 'localhost')
+db.prepare(`UPDATE domains SET project_id = 'agonyang', label = 'agonyang.com', env = 'production' WHERE id = 'agonyang-main'`).run()
+db.prepare(`DELETE FROM domains WHERE id IN ('agonyang-com')`).run()
+
+// chzzk-analyze 프로젝트 추가
+db.prepare(`INSERT OR IGNORE INTO projects (id, name, path, compose_file, deploy_cmd, git_repo, git_branch) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run(
+    'chzzk-analyze',
+    'chzzk-analyze',
+    '/home/xsandox/agonyang/chzzk-analysis',
+    '/home/xsandox/agonyang/docker-compose.minipc.yml',
+    'docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml build chzzk-analysis && docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml up -d chzzk-analysis',
+    'xsandox12/agonyang',
+    'master'
+  )
+db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run('chzzk-analyze-test', 'chzzk-analyze', 'chzzk-analyze', `http://${process.env.MINIPC_HOST ?? 'localhost'}:4000/chzzk-analyze/`, 4000, 0, 'test')
+db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run('chzzk-analyze-prod', 'chzzk-analyze', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1, 'production')
+
 // chzzk-dashboard 프로젝트 추가
 db.prepare(`INSERT OR IGNORE INTO projects (id, name, path, compose_file, deploy_cmd, git_repo, git_branch) VALUES (?, ?, ?, ?, ?, ?, ?)`)
   .run(
