@@ -67,10 +67,10 @@ export default function PipelineCard({ project, domains }: { project: Project; d
   const fetchStatus = async () => {
     const [gitRes, dockerRes] = await Promise.all([
       fetch(`/api/git/${project.id}/status`).then((r) => r.json()).catch(() => null),
-      fetch('/api/docker/containers').then((r) => r.json()).catch(() => ({ containers: [] })),
+      fetch('/api/docker/containers').then((r) => r.json()).catch(() => []),
     ])
     if (gitRes && !gitRes.error) setGit(gitRes)
-    if (dockerRes.containers) setContainers(dockerRes.containers)
+    if (Array.isArray(dockerRes)) setContainers(dockerRes)
 
     const deployRes = await fetch(`/api/deploy?projectId=${project.id}`).then((r) => r.json()).catch(() => null)
     if (Array.isArray(deployRes) && deployRes[0]) setLastDeploy(deployRes[0])

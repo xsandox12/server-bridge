@@ -13,7 +13,7 @@ ENV NODE_ENV=production
 ENV WORKSPACE_ROOT=/workspace
 ENV DATA_DIR=/data
 
-RUN apk add --no-cache bash
+RUN apk add --no-cache bash git
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
