@@ -48,21 +48,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pro
           date: data.commit?.author?.date ?? '',
         }
 
-        // 로컬 ↔ 원격 방향 비교 (같은 커밋이면 생략)
-        if (remote.commit && remote.commit !== commitHash) {
-          const compareRes = await fetch(
-            `https://api.github.com/repos/${project.git_repo}/compare/${remote.commit}...${commitHash}`,
-            { headers, cache: 'no-store' }
-          )
-          if (compareRes.ok) {
-            const cmp = await compareRes.json()
-            // base=remote, head=local
-            // ahead_by: local이 remote보다 앞선 커밋 수
-            // behind_by: local이 remote보다 뒤처진 커밋 수
-            ahead = cmp.ahead_by ?? 0
-            behind = cmp.behind_by ?? 0
-          }
-        }
+        // git 로컬 tracking ref로 ahead/behind 계산 (GitHub compare API 불필요)
+        const remoteBranchRef = `origin/${remoteBranch}`
+        const aheadStr = git(project.path, `rev-list ${remoteBranchRef}..HEAD --count`)
+        const behindStr = git(project.path, `rev-list HEAD..${remoteBranchRef} --count`)
+        ahead = parseInt(aheadStr) || 0
+        behind = parseInt(behindStr) || 0
       }
     } catch { /* GitHub 연결 실패 */ }
   }
