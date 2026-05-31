@@ -124,7 +124,34 @@ export default function PipelineCard({ project, domains }: { project: Project; d
       body: JSON.stringify({ projectId: project.id }),
     })
     const { jobId } = await postRes.json()
-    return streamAction(`/api/deploy/${jobId}/stream`, 'GET')
+
+    // 배포 스트림은 JSON 형식: {"type":"log","line":"..."} / {"type":"done","status":"..."}
+    const res = await fetch(`/api/deploy/${jobId}/stream`)
+    if (!res.body) { setAction('error'); return }
+    const reader = res.body.getReader()
+    const dec = new TextDecoder()
+    let buf = ''
+    while (true) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buf += dec.decode(value, { stream: true })
+      const lines = buf.split('\n')
+      buf = lines.pop() ?? ''
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        try {
+          const msg = JSON.parse(line.slice(6))
+          if (msg.type === 'log') setLogs((l) => [...l, msg.line?.trimEnd() ?? ''])
+          if (msg.type === 'done') {
+            setAction(msg.status === 'success' ? 'done' : 'error')
+            await fetchStatus()
+            return
+          }
+        } catch { setLogs((l) => [...l, line.slice(6)]) }
+      }
+    }
+    setAction('done')
+    await fetchStatus()
   }
   const runPullAndDeploy = async () => {
     await runPull()

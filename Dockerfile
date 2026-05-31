@@ -13,7 +13,7 @@ ENV NODE_ENV=production
 ENV WORKSPACE_ROOT=/workspace
 ENV DATA_DIR=/data
 
-RUN apk add --no-cache bash git && git config --global --add safe.directory '*'
+RUN apk add --no-cache bash git docker-cli docker-cli-compose && git config --global --add safe.directory '*'
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
