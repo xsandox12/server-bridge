@@ -86,57 +86,54 @@ if (existing.cnt === 0) {
   insertDomain.run('agonyang-com', 'agonyang', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
 }
 
-// agonyang → main + chzzk-analyze 분리
+const h = process.env.MINIPC_HOST ?? 'localhost'
+
+// ── agonyang → main ──
 db.prepare(`UPDATE projects SET
-  name = 'main (agonyang.com)',
-  deploy_cmd = 'docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml build nginx && docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml up -d nginx'
+  name = 'main',
+  path = '/home/xsandox/main',
+  compose_file = '/home/xsandox/main/docker-compose.yml',
+  deploy_cmd = 'docker compose -f /home/xsandox/main/docker-compose.yml build nginx && docker compose -f /home/xsandox/main/docker-compose.yml up -d nginx',
+  git_repo = 'xsandox12/main',
+  git_branch = 'master'
   WHERE id = 'agonyang'`).run()
 
-// main 도메인만 agonyang에 남기고, chzzk-analyze 도메인은 새 프로젝트로 이동
-db.prepare(`UPDATE domains SET project_id = 'agonyang', env = 'test',  url = 'http://' || COALESCE(?, 'localhost') || ':4000/'
-  WHERE id = 'agonyang-nginx'`).run(process.env.MINIPC_HOST ?? 'localhost')
-db.prepare(`UPDATE domains SET project_id = 'agonyang', label = 'agonyang.com', env = 'production' WHERE id = 'agonyang-main'`).run()
-db.prepare(`DELETE FROM domains WHERE id IN ('agonyang-com')`).run()
+db.prepare(`DELETE FROM domains WHERE id IN ('agonyang-cf','agonyang-com')`).run()
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('agonyang-nginx', 'agonyang', 'main', `http://${h}:4000/`, 4000, 0, 'test')
+db.prepare(`UPDATE domains SET env='test', label='main', url=? WHERE id='agonyang-nginx'`).run(`http://${h}:4000/`)
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('agonyang-main', 'agonyang', 'agonyang.com', 'https://www.agonyang.com', null, 1, 'production')
+db.prepare(`UPDATE domains SET env='production', label='agonyang.com', project_id='agonyang' WHERE id='agonyang-main'`).run()
 
-// chzzk-analyze 프로젝트 추가
-db.prepare(`INSERT OR IGNORE INTO projects (id, name, path, compose_file, deploy_cmd, git_repo, git_branch) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-  .run(
-    'chzzk-analyze',
-    'chzzk-analyze',
-    '/home/xsandox/agonyang/chzzk-analysis',
-    '/home/xsandox/agonyang/docker-compose.minipc.yml',
-    'docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml build chzzk-analysis && docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml up -d chzzk-analysis',
-    'xsandox12/agonyang',
-    'master'
-  )
-db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-  .run('chzzk-analyze-test', 'chzzk-analyze', 'chzzk-analyze', `http://${process.env.MINIPC_HOST ?? 'localhost'}:4000/chzzk-analyze/`, 4000, 0, 'test')
-db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-  .run('chzzk-analyze-prod', 'chzzk-analyze', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1, 'production')
+// ── chzzk-analyze ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch) VALUES (?,?,?,?,?,?,?)`)
+  .run('chzzk-analyze','chzzk-analyze','/home/xsandox/chzzk-analyze','/home/xsandox/main/docker-compose.yml',
+    'docker compose -f /home/xsandox/main/docker-compose.yml build chzzk-analysis && docker compose -f /home/xsandox/main/docker-compose.yml up -d chzzk-analysis',
+    'xsandox12/chzzk-analyze','master')
+db.prepare(`UPDATE projects SET path=?,git_repo=?,deploy_cmd=? WHERE id='chzzk-analyze'`)
+  .run('/home/xsandox/chzzk-analyze','xsandox12/chzzk-analyze',
+    'docker compose -f /home/xsandox/main/docker-compose.yml build chzzk-analysis && docker compose -f /home/xsandox/main/docker-compose.yml up -d chzzk-analysis')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('chzzk-analyze-test','chzzk-analyze','chzzk-analyze',`http://${h}:4000/chzzk-analyze/`,4000,0,'test')
+db.prepare(`UPDATE domains SET url=? WHERE id='chzzk-analyze-test'`).run(`http://${h}:4000/chzzk-analyze/`)
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('chzzk-analyze-prod','chzzk-analyze','chzzk-analyze','https://www.agonyang.com/chzzk-analyze/',null,1,'production')
 
-// chzzk-dashboard 프로젝트 추가
-db.prepare(`INSERT OR IGNORE INTO projects (id, name, path, compose_file, deploy_cmd, git_repo, git_branch) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-  .run(
-    'chzzk-dashboard',
-    'chzzk-dashboard',
-    '/home/xsandox/agonyang/chzzk-dashboard',
-    '/home/xsandox/agonyang/docker-compose.minipc.yml',
-    'docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml build chzzk-dashboard && docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml up -d chzzk-dashboard',
-    'xsandox12/agonyang',
-    'master'
-  )
-db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-  .run('chzzk-dashboard-test', 'chzzk-dashboard', 'chzzk-dashboard', `http://${process.env.MINIPC_HOST ?? 'localhost'}:4000/chzzk-dashboard/`, 4000, 0, 'test')
-db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-  .run('chzzk-dashboard-prod', 'chzzk-dashboard', 'chzzk-dashboard', 'https://www.agonyang.com/chzzk-dashboard/', null, 1, 'production')
+// ── chzzk-dashboard ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch) VALUES (?,?,?,?,?,?,?)`)
+  .run('chzzk-dashboard','chzzk-dashboard','/home/xsandox/chzzk-dashboard','/home/xsandox/main/docker-compose.yml',
+    'docker compose -f /home/xsandox/main/docker-compose.yml build chzzk-dashboard && docker compose -f /home/xsandox/main/docker-compose.yml up -d chzzk-dashboard',
+    'xsandox12/chzzk-dashboard','master')
+db.prepare(`UPDATE projects SET path=?,git_repo=?,deploy_cmd=? WHERE id='chzzk-dashboard'`)
+  .run('/home/xsandox/chzzk-dashboard','xsandox12/chzzk-dashboard',
+    'docker compose -f /home/xsandox/main/docker-compose.yml build chzzk-dashboard && docker compose -f /home/xsandox/main/docker-compose.yml up -d chzzk-dashboard')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('chzzk-dashboard-test','chzzk-dashboard','chzzk-dashboard',`http://${h}:4000/chzzk-dashboard/`,4000,0,'test')
+db.prepare(`UPDATE domains SET url=? WHERE id='chzzk-dashboard-test'`).run(`http://${h}:4000/chzzk-dashboard/`)
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('chzzk-dashboard-prod','chzzk-dashboard','chzzk-dashboard','https://www.agonyang.com/chzzk-dashboard/',null,1,'production')
 
-// 기존 DB 마이그레이션
-db.prepare(`DELETE FROM domains WHERE id = 'agonyang-cf'`).run()
-db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
-  .run('agonyang-main', 'agonyang', 'main', 'https://www.agonyang.com', null, 1)
-db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
-  .run('agonyang-com', 'agonyang', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
-// 기존 agonyang-com 레이블 업데이트
-db.prepare(`UPDATE domains SET label = 'chzzk-analyze' WHERE id = 'agonyang-com'`).run()
+db.prepare(`DELETE FROM domains WHERE id='agonyang-cf'`).run()
 
 export default db
