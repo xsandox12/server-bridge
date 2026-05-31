@@ -17,6 +17,7 @@ db.exec(`
     deploy_cmd TEXT,
     git_repo TEXT,
     git_branch TEXT DEFAULT 'main',
+    docker_service TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -62,6 +63,7 @@ for (const sql of [
   `ALTER TABLE projects ADD COLUMN git_branch TEXT DEFAULT 'main'`,
   `ALTER TABLE deploy_logs ADD COLUMN git_commit TEXT`,
   `ALTER TABLE domains ADD COLUMN env TEXT DEFAULT 'test'`,
+  `ALTER TABLE projects ADD COLUMN docker_service TEXT`,
 ]) {
   try { db.exec(sql) } catch { /* 이미 존재 */ }
 }
@@ -133,6 +135,12 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
 db.prepare(`UPDATE domains SET url=? WHERE id='chzzk-dashboard-test'`).run(`http://${h}:4000/chzzk-dashboard/`)
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('chzzk-dashboard-prod','chzzk-dashboard','chzzk-dashboard','https://www.agonyang.com/chzzk-dashboard/',null,1,'production')
+
+// docker_service 설정 (컨테이너 매칭용)
+db.prepare(`UPDATE projects SET docker_service='nginx'            WHERE id='agonyang'`).run()
+db.prepare(`UPDATE projects SET docker_service='chzzk-analysis'  WHERE id='chzzk-analyze'`).run()
+db.prepare(`UPDATE projects SET docker_service='chzzk-dashboard' WHERE id='chzzk-dashboard'`).run()
+db.prepare(`UPDATE projects SET docker_service='admin'           WHERE id='adv'`).run()
 
 db.prepare(`DELETE FROM domains WHERE id='agonyang-cf'`).run()
 

@@ -9,6 +9,7 @@ interface Project {
   deploy_cmd: string | null
   git_repo: string | null
   git_branch: string | null
+  docker_service: string | null
 }
 
 interface Domain { id: string; label: string; url: string; env: string }
@@ -163,10 +164,12 @@ export default function PipelineCard({ project, domains }: { project: Project; d
   const isDirty = git?.local.dirty
   const needsPull = (git?.behind ?? 0) > 0
   const needsPush = (git?.ahead ?? 0) > 0
-  const projectContainers = containers.filter((c) =>
-    c.name.toLowerCase().includes(project.id.toLowerCase()) ||
-    c.name.toLowerCase().replace(/-/g, '').includes(project.id.toLowerCase().replace(/-/g, ''))
-  )
+  const projectContainers = containers.filter((c) => {
+    const n = c.name.toLowerCase()
+    if (project.docker_service) return n.includes(project.docker_service.toLowerCase())
+    return n.includes(project.id.toLowerCase()) ||
+      n.replace(/-/g, '').includes(project.id.toLowerCase().replace(/-/g, ''))
+  })
 
   return (
     <div className="rounded-xl p-4 flex flex-col gap-3" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>

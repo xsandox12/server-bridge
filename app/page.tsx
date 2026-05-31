@@ -3,7 +3,7 @@ import db from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-type Project = { id: string; name: string; path: string; deploy_cmd: string | null; git_repo: string | null; git_branch: string | null }
+type Project = { id: string; name: string; path: string; deploy_cmd: string | null; git_repo: string | null; git_branch: string | null; docker_service: string | null }
 type Domain = { id: string; project_id: string; label: string; url: string; env: string }
 
 export default function Home() {
