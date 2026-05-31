@@ -57,11 +57,11 @@ if (existing.cnt === 0) {
   const insertDomain = db.prepare(`INSERT INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
   insertDomain.run('adv-local', 'adv', 'adv-admin (로컬)', 'http://localhost:8080', 8080, 0)
   insertDomain.run('agonyang-nginx', 'agonyang', 'agonyang nginx', 'http://localhost:4000', 4000, 0)
-  insertDomain.run('agonyang-cf', 'agonyang', 'agonyang (외부)', 'https://agonyang.kr', null, 1)
   insertDomain.run('agonyang-com', 'agonyang', 'agonyang.com', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
 }
 
-// 기존 DB에도 누락된 도메인 추가 (이미 있으면 무시)
+// 기존 DB 마이그레이션: agonyang.kr → agonyang.com
+db.prepare(`DELETE FROM domains WHERE id = 'agonyang-cf'`).run()
 db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
   .run('agonyang-com', 'agonyang', 'agonyang.com', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
 
