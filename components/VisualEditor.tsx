@@ -29,6 +29,9 @@ export default function VisualEditor({ projectId, projectPath, domains }: Props)
   const [result, setResult] = useState<{ explanation: string; newContent: string } | null>(null)
   const [applying, setApplying] = useState(false)
   const [applied, setApplied] = useState(false)
+  const [allFiles, setAllFiles] = useState<string[]>([])
+  const [allFilesFilter, setAllFilesFilter] = useState('')
+  const [showFilePicker, setShowFilePicker] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const promptRef = useRef<HTMLTextAreaElement>(null)
 
@@ -45,6 +48,8 @@ export default function VisualEditor({ projectId, projectPath, domains }: Props)
       setFoundFiles([])
       setSelectedFile('')
       setFileContent('')
+      setShowFilePicker(false)
+      setAllFilesFilter('')
 
       // 소스 파일 자동 검색
       const searchText = el.textContent.trim()
@@ -70,6 +75,14 @@ export default function VisualEditor({ projectId, projectPath, domains }: Props)
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
   }, [projectPath])
+
+  const loadAllFiles = async () => {
+    if (allFiles.length > 0) { setShowFilePicker(true); return }
+    const res = await fetch(`/api/files?path=${encodeURIComponent(projectPath)}&recursive=true`)
+    const data = await res.json()
+    setAllFiles(data.files ?? [])
+    setShowFilePicker(true)
+  }
 
   const loadFile = async (path: string) => {
     setSelectedFile(path)
@@ -182,17 +195,25 @@ export default function VisualEditor({ projectId, projectPath, domains }: Props)
 
             {/* 소스 파일 */}
             <div>
-              <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>
-                소스 파일 {searching ? '검색 중…' : `(${foundFiles.length}개)`}
-              </p>
-              {foundFiles.length === 0 && !searching && (
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>파일을 찾지 못했습니다.</p>
-              )}
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>
+                  소스 파일 {searching ? '검색 중…' : `(${foundFiles.length}개)`}
+                </p>
+                <button
+                  onClick={loadAllFiles}
+                  className="text-xs px-2 py-0.5 rounded"
+                  style={{ background: '#1e293b', color: 'var(--muted)' }}
+                >
+                  직접 선택
+                </button>
+              </div>
+
+              {/* 자동 검색 결과 */}
               <div className="flex flex-col gap-1">
                 {foundFiles.map((f) => (
                   <button
                     key={f}
-                    onClick={() => loadFile(f)}
+                    onClick={() => { loadFile(f); setShowFilePicker(false) }}
                     className="text-left text-xs px-2 py-1.5 rounded truncate"
                     style={{
                       background: selectedFile === f ? 'var(--accent)' : '#0f172a',
@@ -204,6 +225,38 @@ export default function VisualEditor({ projectId, projectPath, domains }: Props)
                   </button>
                 ))}
               </div>
+
+              {/* 수동 파일 선택 */}
+              {showFilePicker && (
+                <div className="mt-2 flex flex-col gap-1">
+                  <input
+                    autoFocus
+                    type="text"
+                    value={allFilesFilter}
+                    onChange={(e) => setAllFilesFilter(e.target.value)}
+                    placeholder="파일 이름 검색…"
+                    className="w-full rounded px-2 py-1 text-xs"
+                    style={{ background: '#0f172a', border: '1px solid var(--card-border)', color: 'var(--foreground)' }}
+                  />
+                  <div className="flex flex-col gap-0.5 max-h-40 overflow-y-auto">
+                    {allFiles
+                      .filter((f) => !allFilesFilter || f.toLowerCase().includes(allFilesFilter.toLowerCase()))
+                      .map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => { loadFile(f); setShowFilePicker(false) }}
+                          className="text-left text-xs px-2 py-1 rounded truncate"
+                          style={{
+                            background: selectedFile === f ? 'var(--accent)' : '#0f172a',
+                            color: selectedFile === f ? '#fff' : 'var(--foreground)',
+                          }}
+                        >
+                          {f.replace(projectPath, '').replace(/^\//, '')}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* AI 수정 요청 */}

@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // -F: 정규식 없이 고정 문자열 검색 (한국어/특수문자 안전)
     const result = execSync(
-      `grep -rl ${JSON.stringify(text)} ${JSON.stringify(safe)} --include="*.js" --include="*.ts" --include="*.tsx" --include="*.jsx" --include="*.html" --include="*.css" 2>/dev/null | head -10`,
+      `grep -rlF ${JSON.stringify(text)} ${JSON.stringify(safe)} --include="*.js" --include="*.ts" --include="*.tsx" --include="*.jsx" --include="*.html" --include="*.css" --include="*.vue" --include="*.json" 2>/dev/null | head -10`,
       { encoding: 'utf8', timeout: 5000 }
     )
     const files = result.trim().split('\n').filter(Boolean)
