@@ -57,12 +57,17 @@ if (existing.cnt === 0) {
   const insertDomain = db.prepare(`INSERT INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
   insertDomain.run('adv-local', 'adv', 'adv-admin (로컬)', 'http://localhost:8080', 8080, 0)
   insertDomain.run('agonyang-nginx', 'agonyang', 'agonyang nginx', 'http://localhost:4000', 4000, 0)
-  insertDomain.run('agonyang-com', 'agonyang', 'agonyang.com', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
+  insertDomain.run('agonyang-main', 'agonyang', 'main', 'https://www.agonyang.com', null, 1)
+  insertDomain.run('agonyang-com', 'agonyang', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
 }
 
-// 기존 DB 마이그레이션: agonyang.kr → agonyang.com
+// 기존 DB 마이그레이션
 db.prepare(`DELETE FROM domains WHERE id = 'agonyang-cf'`).run()
 db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
-  .run('agonyang-com', 'agonyang', 'agonyang.com', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
+  .run('agonyang-main', 'agonyang', 'main', 'https://www.agonyang.com', null, 1)
+db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
+  .run('agonyang-com', 'agonyang', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
+// 기존 agonyang-com 레이블 업데이트
+db.prepare(`UPDATE domains SET label = 'chzzk-analyze' WHERE id = 'agonyang-com'`).run()
 
 export default db
