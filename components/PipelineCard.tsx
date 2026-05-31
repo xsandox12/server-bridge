@@ -16,6 +16,8 @@ interface Domain { id: string; label: string; url: string }
 interface GitStatus {
   local: { branch: string; commit: string; message: string; dirty: boolean }
   remote: { commit: string; message: string; date: string } | null
+  ahead: number
+  behind: number
 }
 
 interface Container { id: string; name: string; status: string; state: string }
@@ -159,7 +161,8 @@ export default function PipelineCard({ project, domains }: { project: Project; d
   }
 
   const isDirty = git?.local.dirty
-  const isAhead = git?.remote && git.local.commit !== git.remote.commit
+  const needsPull = (git?.behind ?? 0) > 0
+  const needsPush = (git?.ahead ?? 0) > 0
   const projectContainers = containers.filter((c) =>
     c.name.toLowerCase().includes(project.id.toLowerCase()) ||
     c.name.toLowerCase().replace(/-/g, '').includes(project.id.toLowerCase().replace(/-/g, ''))
@@ -230,8 +233,9 @@ export default function PipelineCard({ project, domains }: { project: Project; d
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="text-xs font-mono" style={{ color: 'var(--muted)' }}>{git.local.branch}</span>
                 {isDirty && <StatusBadge ok={false} label="변경 있음" />}
-                {isAhead && <StatusBadge ok={false} label="Pull 필요" />}
-                {!isDirty && !isAhead && git.remote && <StatusBadge ok={true} label="최신" />}
+                {needsPull && <StatusBadge ok={false} label={`Pull 필요 (${git!.behind})`} />}
+                {needsPush && <StatusBadge ok={false} label={`Push 필요 (${git!.ahead})`} />}
+                {!isDirty && !needsPull && !needsPush && git.remote && <StatusBadge ok={true} label="최신" />}
               </div>
             </>
           ) : (
