@@ -58,7 +58,10 @@ const CLICK_SCRIPT = `
 
 function toServerUrl(url: string): string {
   const hostGateway = process.env.HOST_GATEWAY ?? 'host.docker.internal'
-  return url.replace(/\blocalhost\b/g, hostGateway)
+  const minipcHost = process.env.MINIPC_HOST
+  let result = url.replace(/\blocalhost\b/g, hostGateway)
+  if (minipcHost) result = result.replace(new RegExp(minipcHost.replace(/\./g, '\\.'), 'g'), hostGateway)
+  return result
 }
 
 // 상대/절대 URL을 프록시 경유 URL로 변환

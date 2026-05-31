@@ -26,7 +26,8 @@ db.exec(`
     label TEXT,
     url TEXT,
     port INTEGER,
-    is_external INTEGER DEFAULT 0
+    is_external INTEGER DEFAULT 0,
+    env TEXT DEFAULT 'test'
   );
 
   CREATE TABLE IF NOT EXISTS ai_providers (
@@ -60,9 +61,16 @@ for (const sql of [
   `ALTER TABLE projects ADD COLUMN git_repo TEXT`,
   `ALTER TABLE projects ADD COLUMN git_branch TEXT DEFAULT 'main'`,
   `ALTER TABLE deploy_logs ADD COLUMN git_commit TEXT`,
+  `ALTER TABLE domains ADD COLUMN env TEXT DEFAULT 'test'`,
 ]) {
   try { db.exec(sql) } catch { /* 이미 존재 */ }
 }
+
+// 도메인 env 설정 (test / production)
+const minipcHost = process.env.MINIPC_HOST ?? 'localhost'
+db.prepare(`UPDATE domains SET env = 'production' WHERE id IN ('agonyang-main','agonyang-com')`).run()
+db.prepare(`UPDATE domains SET env = 'test', url = ? WHERE id = 'adv-local'`).run(`http://${minipcHost}:8080`)
+db.prepare(`UPDATE domains SET env = 'test', url = ? WHERE id = 'agonyang-nginx'`).run(`http://${minipcHost}:4000`)
 
 // 초기 데이터 (미니PC 프로젝트들)
 const existing = db.prepare('SELECT COUNT(*) as cnt FROM projects').get() as { cnt: number }

@@ -11,7 +11,7 @@ interface Project {
   git_branch: string | null
 }
 
-interface Domain { id: string; label: string; url: string }
+interface Domain { id: string; label: string; url: string; env: string }
 
 interface GitStatus {
   local: { branch: string; commit: string; message: string; dirty: boolean }
@@ -266,14 +266,28 @@ export default function PipelineCard({ project, domains }: { project: Project; d
 
         {/* DNS / 도메인 */}
         <StageBox label="도메인">
-          {domains.length > 0 ? domains.map((d) => (
-            <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
-              className="text-xs hover:underline block"
-              style={{ color: '#60a5fa' }}
-            >
-              {d.label}
-            </a>
-          )) : (
+          {domains.length > 0 ? (
+            <>
+              {domains.filter((d) => d.env === 'test').map((d) => (
+                <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs hover:underline flex items-center gap-1"
+                  style={{ color: '#fb923c' }}
+                >
+                  <span style={{ fontSize: '9px', background: 'rgba(251,146,60,0.15)', padding: '0 3px', borderRadius: 3 }}>TEST</span>
+                  {d.label}
+                </a>
+              ))}
+              {domains.filter((d) => d.env !== 'test').map((d) => (
+                <a key={d.id} href={d.url} target="_blank" rel="noopener noreferrer"
+                  className="text-xs hover:underline flex items-center gap-1"
+                  style={{ color: '#4ade80' }}
+                >
+                  <span style={{ fontSize: '9px', background: 'rgba(74,222,128,0.15)', padding: '0 3px', borderRadius: 3 }}>PROD</span>
+                  {d.label}
+                </a>
+              ))}
+            </>
+          ) : (
             <p className="text-xs" style={{ color: 'var(--muted)' }}>도메인 없음</p>
           )}
           <a href="/dns" className="text-xs mt-1 block" style={{ color: 'var(--muted)' }}>DNS 관리 →</a>

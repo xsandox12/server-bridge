@@ -12,6 +12,7 @@ services:
       - NODE_ENV=production
       - WORKSPACE_ROOT=/home/xsandox
       - DATA_DIR=/data
+      - MINIPC_HOST=112.168.76.70
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
