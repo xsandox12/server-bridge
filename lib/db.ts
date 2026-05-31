@@ -15,6 +15,8 @@ db.exec(`
     path TEXT NOT NULL,
     compose_file TEXT,
     deploy_cmd TEXT,
+    git_repo TEXT,
+    git_branch TEXT DEFAULT 'main',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -42,10 +44,25 @@ db.exec(`
     command TEXT,
     status TEXT DEFAULT 'running',
     output TEXT DEFAULT '',
+    git_commit TEXT,
     started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     finished_at DATETIME
   );
+
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  );
 `)
+
+// 기존 DB 마이그레이션 (컬럼 없으면 추가)
+for (const sql of [
+  `ALTER TABLE projects ADD COLUMN git_repo TEXT`,
+  `ALTER TABLE projects ADD COLUMN git_branch TEXT DEFAULT 'main'`,
+  `ALTER TABLE deploy_logs ADD COLUMN git_commit TEXT`,
+]) {
+  try { db.exec(sql) } catch { /* 이미 존재 */ }
+}
 
 // 초기 데이터 (미니PC 프로젝트들)
 const existing = db.prepare('SELECT COUNT(*) as cnt FROM projects').get() as { cnt: number }
