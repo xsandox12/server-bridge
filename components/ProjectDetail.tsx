@@ -48,7 +48,16 @@ export default function ProjectDetail({ project }: { project: Project }) {
           <h1 className="text-xl font-bold">{project.name}</h1>
           <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--muted)' }}>{project.path}</p>
         </div>
-        {project.deploy_cmd && <DeployPanel projectId={project.id} />}
+        <div className="flex items-center gap-2">
+          <a
+            href={`/editor/${project.id}`}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium"
+            style={{ background: '#1d4ed8', color: '#fff' }}
+          >
+            페이지 편집
+          </a>
+          {project.deploy_cmd && <DeployPanel projectId={project.id} />}
+        </div>
       </div>
 
       {/* 3-panel 레이아웃 */}

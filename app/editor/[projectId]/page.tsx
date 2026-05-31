@@ -13,7 +13,7 @@ export default async function EditorPage({ params }: { params: Promise<{ project
   if (!project) notFound()
 
   const domains = db
-    .prepare('SELECT * FROM domains WHERE project_id = ? AND is_external = 0')
+    .prepare('SELECT * FROM domains WHERE project_id = ?')
     .all(projectId) as Domain[]
 
   if (domains.length === 0) {
