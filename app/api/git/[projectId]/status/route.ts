@@ -48,12 +48,19 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pro
           date: data.commit?.author?.date ?? '',
         }
 
-        // git 로컬 tracking ref로 ahead/behind 계산 (GitHub compare API 불필요)
-        const remoteBranchRef = `origin/${remoteBranch}`
-        const aheadStr = git(project.path, `rev-list ${remoteBranchRef}..HEAD --count`)
-        const behindStr = git(project.path, `rev-list HEAD..${remoteBranchRef} --count`)
-        ahead = parseInt(aheadStr) || 0
-        behind = parseInt(behindStr) || 0
+        // GitHub API 커밋이 로컬에 있으면 git으로 정확하게 ahead/behind 계산
+        // 없으면 behind=1 (pull 필요)
+        if (remote.commit) {
+          const exists = git(project.path, `cat-file -t ${remote.commit}`) === 'commit'
+          if (exists) {
+            const aheadStr = git(project.path, `rev-list ${remote.commit}..HEAD --count`)
+            const behindStr = git(project.path, `rev-list HEAD..${remote.commit} --count`)
+            ahead = parseInt(aheadStr) || 0
+            behind = parseInt(behindStr) || 0
+          } else {
+            behind = 1 // 원격 커밋이 로컬에 없음 → pull 필요
+          }
+        }
       }
     } catch { /* GitHub 연결 실패 */ }
   }
