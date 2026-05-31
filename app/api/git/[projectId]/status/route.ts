@@ -21,7 +21,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ pro
   // 로컬 git 상태
   const localCommit = git(project.path, 'log --oneline -1')
   const branch = git(project.path, 'rev-parse --abbrev-ref HEAD')
-  const dirty = git(project.path, 'status --short') !== ''
+  // 미추적 파일(??) 제외, 실제 수정/삭제/추가된 파일만 체크
+  const dirty = git(project.path, 'status --short --untracked-files=no') !== ''
   const commitHash = localCommit.split(' ')[0] ?? ''
 
   // GitHub API (git_repo 설정된 경우)
