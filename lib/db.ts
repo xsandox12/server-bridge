@@ -86,6 +86,22 @@ if (existing.cnt === 0) {
   insertDomain.run('agonyang-com', 'agonyang', 'chzzk-analyze', 'https://www.agonyang.com/chzzk-analyze/', null, 1)
 }
 
+// chzzk-dashboard 프로젝트 추가
+db.prepare(`INSERT OR IGNORE INTO projects (id, name, path, compose_file, deploy_cmd, git_repo, git_branch) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run(
+    'chzzk-dashboard',
+    'chzzk-dashboard',
+    '/home/xsandox/agonyang/chzzk-dashboard',
+    '/home/xsandox/agonyang/docker-compose.minipc.yml',
+    'docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml build chzzk-dashboard && docker compose -f /home/xsandox/agonyang/docker-compose.minipc.yml up -d chzzk-dashboard',
+    'xsandox12/agonyang',
+    'master'
+  )
+db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run('chzzk-dashboard-test', 'chzzk-dashboard', 'chzzk-dashboard', `http://${process.env.MINIPC_HOST ?? 'localhost'}:4000/chzzk-dashboard/`, 4000, 0, 'test')
+db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external, env) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+  .run('chzzk-dashboard-prod', 'chzzk-dashboard', 'chzzk-dashboard', 'https://www.agonyang.com/chzzk-dashboard/', null, 1, 'production')
+
 // 기존 DB 마이그레이션
 db.prepare(`DELETE FROM domains WHERE id = 'agonyang-cf'`).run()
 db.prepare(`INSERT OR IGNORE INTO domains (id, project_id, label, url, port, is_external) VALUES (?, ?, ?, ?, ?, ?)`)
