@@ -144,4 +144,12 @@ db.prepare(`UPDATE projects SET docker_service='admin'           WHERE id='adv'`
 
 db.prepare(`DELETE FROM domains WHERE id='agonyang-cf'`).run()
 
+// ── coldstorage ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('coldstorage','coldstorage (재고/견적 관리)','/home/xsandox/coldstorage','/home/xsandox/coldstorage/docker-compose.yml',
+    'docker compose build coldstorage && docker compose up -d coldstorage',
+    'xsandox12/coldstorage','master','coldstorage')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('coldstorage-test','coldstorage','coldstorage',`http://${h}:9000/`,9000,0,'test')
+
 export default db
