@@ -11,6 +11,7 @@ const nav = [
 
 const secondary = [
   { href: '/projects', label: '프로젝트', icon: '📁' },
+  { href: '/planning', label: '기획서', icon: '📝' },
   { href: '/settings', label: '설정', icon: '⚙️' },
 ]
 

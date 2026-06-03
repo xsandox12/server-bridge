@@ -41,5 +41,6 @@ yarn-error.log*
 
 # local data
 .data/
+data/
 .omc/
 next-env.d.ts

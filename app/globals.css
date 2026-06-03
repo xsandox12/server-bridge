@@ -21,3 +21,14 @@ body {
 .status-running { color: var(--success); }
 .status-exited  { color: var(--muted); }
 .status-error   { color: var(--danger); }
+
+.comment-highlight {
+  text-decoration: underline;
+  text-decoration-color: #ef4444;
+  text-decoration-thickness: 2px;
+  background-color: rgba(239, 68, 68, 0.08);
+  padding: 0 1px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.comment-highlight:hover { background-color: rgba(239, 68, 68, 0.18); }
