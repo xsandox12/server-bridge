@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readDocument, writeDocument } from "@/lib/planning/fileSystem";
+import { readDocument, writeDocument, deleteDocument, readProjects, writeProjects } from "@/lib/planning/fileSystem";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params;
@@ -20,4 +20,17 @@ export async function PUT(req: Request, { params }: { params: Promise<{ docId: s
   doc.updatedAt = new Date().toISOString();
   writeDocument(doc);
   return NextResponse.json(doc);
+}
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ docId: string }> }) {
+  const { docId } = await params;
+  const data = readProjects();
+  for (const project of data.projects) {
+    for (const cat of project.categories) {
+      cat.documents = cat.documents.filter(d => d.id !== docId);
+    }
+  }
+  writeProjects(data);
+  deleteDocument(docId);
+  return NextResponse.json({ ok: true });
 }

@@ -12,6 +12,7 @@ export default function PlanProjectPage() {
   const [catName, setCatName] = useState("");
   const [addingDoc, setAddingDoc] = useState<string | null>(null);
   const [docName, setDocName] = useState("");
+  const [confirmDeleteDoc, setConfirmDeleteDoc] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/planning/projects");
@@ -29,6 +30,12 @@ export default function PlanProjectPage() {
       body: JSON.stringify({ type: "category", projectId, name: catName.trim() }),
     });
     setCatName(""); setAddingCat(false); load();
+  }
+
+  async function deleteDoc(docId: string) {
+    await fetch(`/api/planning/documents/${docId}`, { method: "DELETE" });
+    setConfirmDeleteDoc(null);
+    load();
   }
 
   async function createDocument(categoryId: string) {
@@ -55,10 +62,24 @@ export default function PlanProjectPage() {
           <h2 className="font-semibold text-gray-300 mb-2">{cat.name}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {cat.documents.map(docRef => (
-              <button key={docRef.id} onClick={() => router.push(`/planning/document/${docRef.id}`)}
-                className="p-4 bg-white/5 border border-white/10 rounded hover:bg-white/10 text-left text-sm text-gray-200">
-                {docRef.name}
-              </button>
+              <div key={docRef.id} className="relative group">
+                <button onClick={() => router.push(`/planning/document/${docRef.id}`)}
+                  className="w-full p-4 bg-white/5 border border-white/10 rounded hover:bg-white/10 text-left text-sm text-gray-200">
+                  {docRef.name}
+                </button>
+                {confirmDeleteDoc === docRef.id ? (
+                  <div className="absolute top-1 right-1 flex items-center gap-1 bg-gray-900 border border-red-500/50 rounded px-2 py-1">
+                    <span className="text-xs text-gray-300">삭제?</span>
+                    <button onClick={() => deleteDoc(docRef.id)} className="text-xs text-red-400 hover:text-red-300 px-1">예</button>
+                    <button onClick={() => setConfirmDeleteDoc(null)} className="text-xs text-gray-400 hover:text-gray-200 px-1">취소</button>
+                  </div>
+                ) : (
+                  <button onClick={(e) => { e.stopPropagation(); setConfirmDeleteDoc(docRef.id); }}
+                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 text-lg leading-none px-1">
+                    ×
+                  </button>
+                )}
+              </div>
             ))}
             {addingDoc === cat.id ? (
               <div className="p-4 bg-white/5 border border-blue-500/50 rounded">

@@ -9,6 +9,7 @@ export default function PlanningPage() {
   const [projects, setProjects] = useState<PlanProject[]>([]);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/planning/projects");
@@ -16,6 +17,12 @@ export default function PlanningPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function deleteProject(id: string) {
+    await fetch(`/api/planning/projects/${id}`, { method: "DELETE" });
+    setConfirmDelete(null);
+    load();
+  }
 
   async function createProject() {
     if (!name.trim()) return;
@@ -32,13 +39,27 @@ export default function PlanningPage() {
       <h1 className="text-xl font-bold mb-4 text-white">기획서 관리</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {projects.map(p => (
-          <button key={p.id} onClick={() => router.push(`/planning/project/${p.id}`)}
-            className="p-5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-left">
-            <h2 className="font-semibold text-white">{p.name}</h2>
-            <p className="text-xs text-gray-400 mt-1">
-              카테고리 {p.categories.length}개 · {p.categories.reduce((n, c) => n + c.documents.length, 0)}개 문서
-            </p>
-          </button>
+          <div key={p.id} className="relative group">
+            <button onClick={() => router.push(`/planning/project/${p.id}`)}
+              className="w-full p-5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-left">
+              <h2 className="font-semibold text-white">{p.name}</h2>
+              <p className="text-xs text-gray-400 mt-1">
+                카테고리 {p.categories.length}개 · {p.categories.reduce((n, c) => n + c.documents.length, 0)}개 문서
+              </p>
+            </button>
+            {confirmDelete === p.id ? (
+              <div className="absolute top-2 right-2 flex items-center gap-1 bg-gray-900 border border-red-500/50 rounded px-2 py-1">
+                <span className="text-xs text-gray-300">삭제?</span>
+                <button onClick={() => deleteProject(p.id)} className="text-xs text-red-400 hover:text-red-300 px-1">예</button>
+                <button onClick={() => setConfirmDelete(null)} className="text-xs text-gray-400 hover:text-gray-200 px-1">취소</button>
+              </div>
+            ) : (
+              <button onClick={(e) => { e.stopPropagation(); setConfirmDelete(p.id); }}
+                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 text-lg leading-none px-1">
+                ×
+              </button>
+            )}
+          </div>
         ))}
         {adding ? (
           <div className="p-5 bg-white/5 border border-blue-500/50 rounded-lg">
