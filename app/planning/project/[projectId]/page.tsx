@@ -13,6 +13,7 @@ export default function PlanProjectPage() {
   const [addingDoc, setAddingDoc] = useState<string | null>(null);
   const [docName, setDocName] = useState("");
   const [confirmDeleteDoc, setConfirmDeleteDoc] = useState<string | null>(null);
+  const [confirmDeleteCat, setConfirmDeleteCat] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/planning/projects");
@@ -30,6 +31,12 @@ export default function PlanProjectPage() {
       body: JSON.stringify({ type: "category", projectId, name: catName.trim() }),
     });
     setCatName(""); setAddingCat(false); load();
+  }
+
+  async function deleteCat(catId: string) {
+    await fetch(`/api/planning/projects/${projectId}/categories/${catId}`, { method: "DELETE" });
+    setConfirmDeleteCat(null);
+    load();
   }
 
   async function deleteDoc(docId: string) {
@@ -59,7 +66,18 @@ export default function PlanProjectPage() {
 
       {project.categories.map(cat => (
         <div key={cat.id} className="mb-6">
-          <h2 className="font-semibold text-gray-300 mb-2">{cat.name}</h2>
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="font-semibold text-gray-300">{cat.name}</h2>
+            {confirmDeleteCat === cat.id ? (
+              <span className="flex items-center gap-1 text-xs">
+                <span className="text-gray-400">삭제?</span>
+                <button onClick={() => deleteCat(cat.id)} className="text-red-400 hover:text-red-300 px-1">예</button>
+                <button onClick={() => setConfirmDeleteCat(null)} className="text-gray-400 hover:text-gray-200 px-1">취소</button>
+              </span>
+            ) : (
+              <button onClick={() => setConfirmDeleteCat(cat.id)} className="text-gray-600 hover:text-red-400 text-sm leading-none">×</button>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {cat.documents.map(docRef => (
               <div key={docRef.id} className="relative group">
