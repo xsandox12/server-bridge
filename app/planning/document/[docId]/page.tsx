@@ -80,6 +80,12 @@ export default function PlanDocumentPage() {
   const handleEdit = (id: string, content: string) => { if (!content) return; updateComments(comments.map(c => c.id === id ? { ...c, content } : c)); };
   const handleDelete = (id: string) => updateComments(comments.filter(c => c.id !== id));
 
+  async function handleDeleteVersion(version: string) {
+    await fetch(`/api/planning/documents/${docId}/versions/${version}`, { method: "DELETE" });
+    if (previewVersion === version) setPreviewVersion(null);
+    loadDoc();
+  }
+
   async function handleSave() {
     const changes = saveChanges.trim() ? saveChanges.split("\n").map(s => s.trim()).filter(Boolean) : ["저장"];
     const body: { changes: string[]; blocks?: Block[]; comments?: Comment[] } = { changes };
@@ -128,7 +134,7 @@ export default function PlanDocumentPage() {
             ? <CommentsPanel comments={comments} activeCommentId={activeCommentId} onCommentClick={setActiveCommentId}
                 onResolve={handleResolve} onUnresolve={handleUnresolve} onEdit={handleEdit} onDelete={handleDelete}
                 onAddComment={handleAddComment} pendingSelection={pendingSelection} />
-            : <VersionPanel doc={doc} previewVersion={previewVersion} onPreviewVersion={handleSetPreviewVersion} />
+            : <VersionPanel doc={doc} previewVersion={previewVersion} onPreviewVersion={handleSetPreviewVersion} onDeleteVersion={handleDeleteVersion} />
           }
         </div>
       </div>
