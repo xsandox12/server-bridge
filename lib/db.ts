@@ -157,5 +157,11 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
   .run('drawingtool','drawingtool (도면 설계)','/home/xsandox/drawingtool',null,null,'xsandox12/drawingtool','master',null)
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('drawingtool-test','drawingtool','drawingtool',`http://${h}:9100/`,9100,0,'test')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('drawingtool-prod','drawingtool','drawingtool.agonyang.com','https://drawingtool.agonyang.com/',null,1,'production')
+
+// ── adv production 도메인 ──
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('adv-prod','adv','adv.agonyang.com','https://adv.agonyang.com/',null,1,'production')
 
 export default db
