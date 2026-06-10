@@ -152,4 +152,10 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('coldstorage-test','coldstorage','coldstorage',`http://${h}:9000/`,9000,0,'test')
 
+// ── drawingtool ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('drawingtool','drawingtool (도면 설계)','/home/xsandox/drawingtool',null,null,'xsandox12/drawingtool','master',null)
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('drawingtool-test','drawingtool','drawingtool',`http://${h}:9100/`,9100,0,'test')
+
 export default db
