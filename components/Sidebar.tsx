@@ -4,8 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const nav = [
-  { href: '/', label: '파이프라인', icon: '⬡' },
-  { href: '/services', label: '서비스', icon: '🖥️' },
+  { href: '/', label: '배포중', icon: '🚀' },
+  { href: '/services', label: '미배포', icon: '📦' },
   { href: '/history', label: '배포 이력', icon: '🕐' },
   { href: '/dns', label: 'DNS', icon: '🌐' },
 ]
