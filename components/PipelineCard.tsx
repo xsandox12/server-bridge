@@ -180,16 +180,18 @@ export default function PipelineCard({ project, domains }: { project: Project; d
           <p className="text-xs font-mono mt-0.5" style={{ color: 'var(--muted)' }}>{project.path}</p>
         </div>
         <div className="flex items-center gap-2">
+          {project.git_repo && (
+            <button
+              onClick={runPull}
+              disabled={action === 'running'}
+              className="text-xs px-3 py-1.5 rounded-lg font-medium"
+              style={{ background: '#1e3a5f', color: '#60a5fa', opacity: action === 'running' ? 0.5 : 1 }}
+            >
+              Pull
+            </button>
+          )}
           {project.deploy_cmd && (
             <>
-              <button
-                onClick={runPull}
-                disabled={action === 'running'}
-                className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                style={{ background: '#1e3a5f', color: '#60a5fa', opacity: action === 'running' ? 0.5 : 1 }}
-              >
-                Pull
-              </button>
               <button
                 onClick={runDeploy}
                 disabled={action === 'running'}
