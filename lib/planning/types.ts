@@ -1,5 +1,21 @@
-export type BlockType = "text" | "mockup";
+export type BlockType =
+  | "text"
+  | "heading1" | "heading2" | "heading3"
+  | "paragraph"
+  | "bullet" | "numbered"
+  | "callout" | "quote"
+  | "divider" | "code"
+  | "mockup";
+
 export type CommentStatus = "open" | "resolved";
+
+export type CanvasShape =
+  | { type: "pen"; points: [number, number][]; stroke: string; width: number }
+  | { type: "rect"; x: number; y: number; w: number; h: number; stroke: string; fill: string }
+  | { type: "circle"; cx: number; cy: number; r: number; stroke: string; fill: string }
+  | { type: "line"; x1: number; y1: number; x2: number; y2: number; stroke: string }
+  | { type: "text"; x: number; y: number; text: string; color: string; size: number }
+  | { type: "eraser"; points: [number, number][] };
 
 export interface Block {
   id: string;
@@ -7,6 +23,7 @@ export interface Block {
   content?: string;
   title?: string;
   imageUrl?: string | null;
+  language?: string;
 }
 
 export interface Comment {

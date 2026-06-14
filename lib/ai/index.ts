@@ -15,48 +15,59 @@ export interface AIEditResponse {
   explanation: string
 }
 
-async function callClaude(req: AIEditRequest): Promise<AIEditResponse> {
-  const { default: Anthropic } = await import('@anthropic-ai/sdk')
-  const client = new Anthropic({ apiKey: req.apiKey })
-  const message = await client.messages.create({
-    model: req.model ?? 'claude-sonnet-4-6',
-    max_tokens: 8192,
-    messages: [{ role: 'user', content: buildPrompt(req) }],
-  })
-  return parseResponse((message.content[0] as { text: string }).text)
+export interface AIProviderConfig {
+  provider: AIProvider
+  apiKey?: string
+  model?: string
+  baseUrl?: string
 }
 
-async function callGPT(req: AIEditRequest): Promise<AIEditResponse> {
-  const { default: OpenAI } = await import('openai')
-  const client = new OpenAI({ apiKey: req.apiKey })
-  const res = await client.chat.completions.create({
-    model: req.model ?? 'gpt-4o',
-    messages: [{ role: 'user', content: buildPrompt(req) }],
-  })
-  return parseResponse(res.choices[0].message.content ?? '')
-}
-
-async function callGemini(req: AIEditRequest): Promise<AIEditResponse> {
-  const { GoogleGenerativeAI } = await import('@google/generative-ai')
-  const client = new GoogleGenerativeAI(req.apiKey ?? '')
-  const model = client.getGenerativeModel({ model: req.model ?? 'gemini-2.0-flash' })
-  const result = await model.generateContent(buildPrompt(req))
-  return parseResponse(result.response.text())
-}
-
-async function callOllama(req: AIEditRequest): Promise<AIEditResponse> {
-  const baseUrl = req.baseUrl ?? 'http://localhost:11434'
-  const res = await fetch(`${baseUrl}/api/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: req.model ?? 'llama3.1',
-      prompt: buildPrompt(req),
-      stream: false,
-    }),
-  })
-  const data = await res.json()
-  return parseResponse(data.response ?? '')
+// 트랜스포트: 임의의 프롬프트 문자열 → 원시 응답 텍스트
+export async function callProvider(cfg: AIProviderConfig, promptText: string): Promise<string> {
+  switch (cfg.provider) {
+    case 'claude': {
+      const { default: Anthropic } = await import('@anthropic-ai/sdk')
+      const client = new Anthropic({ apiKey: cfg.apiKey })
+      const message = await client.messages.create({
+        model: cfg.model ?? 'claude-sonnet-4-6',
+        max_tokens: 8192,
+        messages: [{ role: 'user', content: promptText }],
+      })
+      return (message.content[0] as { text: string }).text
+    }
+    case 'gpt': {
+      const { default: OpenAI } = await import('openai')
+      const client = new OpenAI({ apiKey: cfg.apiKey })
+      const res = await client.chat.completions.create({
+        model: cfg.model ?? 'gpt-4o',
+        messages: [{ role: 'user', content: promptText }],
+      })
+      return res.choices[0].message.content ?? ''
+    }
+    case 'gemini': {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai')
+      const client = new GoogleGenerativeAI(cfg.apiKey ?? '')
+      const model = client.getGenerativeModel({ model: cfg.model ?? 'gemini-2.0-flash' })
+      const result = await model.generateContent(promptText)
+      return result.response.text()
+    }
+    case 'ollama': {
+      const baseUrl = cfg.baseUrl ?? 'http://localhost:11434'
+      const res = await fetch(`${baseUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: cfg.model ?? 'llama3.1',
+          prompt: promptText,
+          stream: false,
+        }),
+      })
+      const data = await res.json()
+      return data.response ?? ''
+    }
+    default:
+      throw new Error(`unknown provider: ${cfg.provider}`)
+  }
 }
 
 function buildPrompt(req: AIEditRequest): string {
@@ -88,11 +99,9 @@ function parseResponse(text: string): AIEditResponse {
 }
 
 export async function editWithAI(req: AIEditRequest): Promise<AIEditResponse> {
-  switch (req.provider) {
-    case 'claude': return callClaude(req)
-    case 'gpt': return callGPT(req)
-    case 'gemini': return callGemini(req)
-    case 'ollama': return callOllama(req)
-    default: throw new Error(`unknown provider: ${req.provider}`)
-  }
+  const text = await callProvider(
+    { provider: req.provider, apiKey: req.apiKey, model: req.model, baseUrl: req.baseUrl },
+    buildPrompt(req),
+  )
+  return parseResponse(text)
 }

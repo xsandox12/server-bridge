@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import type { PlanDocument, Comment, Block } from "@/lib/planning/types";
 import EditorContent from "@/components/planning/EditorContent";
 import CommentsPanel from "@/components/planning/CommentsPanel";
 import VersionPanel from "@/components/planning/VersionPanel";
+import AIPanel from "@/components/planning/AIPanel";
+import BuildModal from "@/components/planning/BuildModal";
+import { shapesToPng } from "@/lib/planning/canvasRender";
+import type { CanvasShape } from "@/lib/planning/types";
 
 interface PendingSelection {
   blockId: string; selectedText: string; startOffset: number; endOffset: number;
@@ -16,13 +20,35 @@ export default function PlanDocumentPage() {
   const router = useRouter();
 
   const [doc, setDoc] = useState<PlanDocument | null>(null);
-  const [rightMode, setRightMode] = useState<"comments" | "versions">("comments");
+  const [rightMode, setRightMode] = useState<"comments" | "versions" | "ai">("comments");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [buildModal, setBuildModal] = useState(false);
   const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const [pendingSelection, setPendingSelection] = useState<PendingSelection | null>(null);
   const [saveModal, setSaveModal] = useState(false);
   const [saveChanges, setSaveChanges] = useState("");
   const [previewVersion, setPreviewVersion] = useState<string | null>(null);
   const [previewComments, setPreviewComments] = useState<Comment[] | null>(null);
+  const autosaveRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  function handleBlocksChange(newBlocks: Block[]) {
+    setDoc(prev => prev ? {
+      ...prev,
+      versions: {
+        ...prev.versions,
+        [prev.currentVersion]: { ...prev.versions[prev.currentVersion], blocks: newBlocks },
+      },
+    } : prev);
+    clearTimeout(autosaveRef.current);
+    autosaveRef.current = setTimeout(() => {
+      fetch(`/api/planning/documents/${docId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blocks: newBlocks }),
+      });
+    }, 1000);
+  }
 
   const loadDoc = useCallback(async () => {
     const res = await fetch(`/api/planning/documents/${docId}`);
@@ -101,7 +127,50 @@ export default function PlanDocumentPage() {
     loadDoc();
   }
 
+  async function handleRunAI(mode: "generate" | "refine" | "feedback", instruction: string, provider: string) {
+    if (isPreview) return;
+    setAiBusy(true);
+    setAiError(null);
+    try {
+      const res = await fetch(`/api/planning/documents/${docId}/ai`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode, instruction, provider }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "AI 요청 실패");
+
+      const newBlocks: Block[] = data.blocks ?? [];
+      // 목업 블록은 도형 JSON → PNG(imageUrl) 클라이언트에서 생성
+      for (const b of newBlocks) {
+        if (b.type === "mockup" && b.content && !b.imageUrl) {
+          try {
+            const shapes = JSON.parse(b.content) as CanvasShape[];
+            if (Array.isArray(shapes)) b.imageUrl = shapesToPng(shapes);
+          } catch { /* 도형 파싱 실패 시 imageUrl 비움 */ }
+        }
+      }
+
+      // feedback 모드: 반영된 메모를 resolved 처리
+      const processed: string[] = data.processedCommentIds ?? [];
+      const newComments = processed.length > 0
+        ? comments.map(c => processed.includes(c.id) ? { ...c, status: "resolved" as const } : c)
+        : comments;
+
+      await fetch(`/api/planning/documents/${docId}/save`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ changes: [`AI: ${data.summary ?? mode}`], blocks: newBlocks, comments: newComments }),
+      });
+      await loadDoc();
+    } catch (err) {
+      setAiError(String(err instanceof Error ? err.message : err));
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
   if (!doc) return <div className="text-gray-400">로딩 중...</div>;
+
+  const openCommentCount = comments.filter(c => c.status === "open").length;
 
   return (
     <div className="flex flex-col h-full">
@@ -114,9 +183,16 @@ export default function PlanDocumentPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-400">Ver.{isPreview ? previewVersion : doc.currentVersion}</span>
+          <button onClick={() => setRightMode(m => m === "ai" ? "comments" : "ai")}
+            className={`text-xs px-3 py-1 rounded border ${rightMode === "ai" ? "bg-white text-gray-900 border-white" : "border-white/30 text-gray-300 hover:bg-white/10"}`}>
+            ✨ AI
+          </button>
           <button onClick={() => setRightMode(m => m === "versions" ? "comments" : "versions")}
             className={`text-xs px-3 py-1 rounded border ${rightMode === "versions" ? "bg-white text-gray-900 border-white" : "border-white/30 text-gray-300 hover:bg-white/10"}`}>
             버전 관리
+          </button>
+          <button onClick={() => setBuildModal(true)} className="text-xs px-3 py-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-1">
+            <span>🛠</span><span>제작</span>
           </button>
           <button onClick={() => setSaveModal(true)} className="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1">
             <span>💾</span><span>저장</span>
@@ -127,17 +203,34 @@ export default function PlanDocumentPage() {
       {/* 본문 */}
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto px-6 py-2 bg-white">
-          <EditorContent blocks={blocks} comments={comments} onTextSelect={handleTextSelect} onCommentClick={setActiveCommentId} />
+          <EditorContent
+            blocks={blocks}
+            comments={comments}
+            onTextSelect={handleTextSelect}
+            onCommentClick={setActiveCommentId}
+            onBlocksChange={isPreview ? undefined : handleBlocksChange}
+            readOnly={isPreview}
+          />
         </div>
         <div className="w-72 shrink-0 bg-gray-50 border-l border-gray-200 overflow-hidden flex flex-col">
-          {rightMode === "comments"
-            ? <CommentsPanel comments={comments} activeCommentId={activeCommentId} onCommentClick={setActiveCommentId}
-                onResolve={handleResolve} onUnresolve={handleUnresolve} onEdit={handleEdit} onDelete={handleDelete}
-                onAddComment={handleAddComment} pendingSelection={pendingSelection} />
-            : <VersionPanel doc={doc} previewVersion={previewVersion} onPreviewVersion={handleSetPreviewVersion} onDeleteVersion={handleDeleteVersion} />
-          }
+          {rightMode === "comments" && (
+            <CommentsPanel comments={comments} activeCommentId={activeCommentId} onCommentClick={setActiveCommentId}
+              onResolve={handleResolve} onUnresolve={handleUnresolve} onEdit={handleEdit} onDelete={handleDelete}
+              onAddComment={handleAddComment} pendingSelection={pendingSelection} />
+          )}
+          {rightMode === "versions" && (
+            <VersionPanel doc={doc} previewVersion={previewVersion} onPreviewVersion={handleSetPreviewVersion} onDeleteVersion={handleDeleteVersion} />
+          )}
+          {rightMode === "ai" && (
+            <AIPanel openCommentCount={openCommentCount} busy={aiBusy} error={aiError} onRun={handleRunAI} />
+          )}
         </div>
       </div>
+
+      {/* 제작 모달 */}
+      {buildModal && (
+        <BuildModal docName={doc.name} blocks={blocks} onClose={() => setBuildModal(false)} />
+      )}
 
       {/* 저장 모달 */}
       {saveModal && (
