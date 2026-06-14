@@ -16,7 +16,16 @@ export async function PUT(req: Request, { params }: { params: Promise<{ docId: s
   const version = doc.versions[doc.currentVersion];
   if (body.blocks !== undefined) version.blocks = body.blocks;
   if (body.comments !== undefined) version.comments = body.comments;
-  if (body.name !== undefined) doc.name = body.name;
+  if (body.name !== undefined) {
+    doc.name = body.name;
+    const data = readProjects();
+    for (const project of data.projects)
+      for (const cat of project.categories) {
+        const ref = cat.documents.find(d => d.id === docId);
+        if (ref) ref.name = body.name;
+      }
+    writeProjects(data);
+  }
   doc.updatedAt = new Date().toISOString();
   writeDocument(doc);
   return NextResponse.json(doc);
