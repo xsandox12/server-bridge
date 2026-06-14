@@ -7,6 +7,9 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
 
 const db = new Database(path.join(DATA_DIR, 'server-bridge.db'))
 db.pragma('journal_mode = WAL')
+// next build 시 다중 워커가 동시에 마이그레이션을 실행하면 SQLITE_BUSY가 발생할 수 있으므로
+// 즉시 에러 대신 잠금 해제를 최대 5초 대기
+db.pragma('busy_timeout = 5000')
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS projects (
