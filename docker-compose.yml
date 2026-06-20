@@ -13,6 +13,8 @@ services:
       - WORKSPACE_ROOT=/home/xsandox
       - DATA_DIR=/data
       - MINIPC_HOST=112.168.76.70
+      # 멀티 네트워크 시 Next standalone이 컨테이너 hostname(특정 IP)에만 바인딩되는 문제 방지
+      - HOSTNAME=0.0.0.0
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
