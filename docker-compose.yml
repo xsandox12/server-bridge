@@ -15,7 +15,15 @@ services:
       - MINIPC_HOST=112.168.76.70
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - ai-cluster
     restart: unless-stopped
 
 volumes:
   server-bridge-data:
+
+networks:
+  ai-cluster:
+    external: true
+    name: ai-cluster_default
