@@ -23,3 +23,12 @@ export async function GET() {
   const providers = db.prepare('SELECT id, name, model, base_url, is_default FROM ai_providers').all()
   return NextResponse.json(providers)
 }
+
+export async function DELETE(req: NextRequest) {
+  const { id } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  db.prepare('DELETE FROM ai_providers WHERE id = ?').run(id)
+
+  return NextResponse.json({ ok: true })
+}

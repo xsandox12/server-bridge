@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Provider { id: string; name: string; api_key: string; model: string; base_url: string; is_default: number }
 interface Project { id: string; name: string; path: string; deploy_cmd: string; git_repo: string; git_branch: string }
@@ -42,8 +43,20 @@ export default function SettingsForm({
   projects: Project[]
   initialSettings: Record<string, string>
 }) {
+  const router = useRouter()
   const [saving, setSaving] = useState<string | null>(null)
   const [msgs, setMsgs] = useState<Record<string, string>>({})
+
+  const deleteProvider = async (id: string, label: string) => {
+    if (!confirm(`'${label}' 연결을 삭제할까요?`)) return
+    const res = await fetch('/api/settings/providers', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (res.ok) router.refresh()
+    else alert('삭제 실패')
+  }
 
   const flash = (key: string, msg: string) => {
     setMsgs((m) => ({ ...m, [key]: msg }))
@@ -189,7 +202,17 @@ export default function SettingsForm({
             {providers.map((p) => (
               <div key={p.id} className="flex items-center justify-between text-sm px-3 py-2 rounded-lg" style={{ background: '#0f172a' }}>
                 <span>{PROVIDER_LABELS[p.name] ?? p.name}</span>
-                <span style={{ color: 'var(--success)' }}>✓ 등록됨</span>
+                <div className="flex items-center gap-3">
+                  <span style={{ color: 'var(--success)' }}>✓ 등록됨</span>
+                  <button
+                    type="button"
+                    onClick={() => deleteProvider(p.id, PROVIDER_LABELS[p.name] ?? p.name)}
+                    className="px-2 py-1 rounded-md"
+                    style={{ background: 'transparent', border: '1px solid var(--card-border)', color: '#ef4444' }}
+                  >
+                    삭제
+                  </button>
+                </div>
               </div>
             ))}
           </div>
