@@ -168,8 +168,9 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
   .run('adv-prod','adv','adv.agonyang.com','https://adv.agonyang.com/',null,1,'production')
 
 // ── game-schedule (편성표.GG) ──
-// 미니PC 미배포, git remote도 아직 없음 — 실제 배포/저장소 확정되면 path/git_repo/domains 채울 것
+// 미니PC 미배포 (Vercel 배포 예정) — 실제 배포되면 domains 채울 것
 db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
-  .run('game-schedule','game-schedule (편성표.GG)','D:/dev/game-schedule',null,null,null,'master',null)
+  .run('game-schedule','game-schedule (편성표.GG)','D:/dev/game-schedule',null,null,'xsandox12/game-schedule','master',null)
+db.prepare(`UPDATE projects SET git_repo='xsandox12/game-schedule' WHERE id='game-schedule'`).run()
 
 export default db
