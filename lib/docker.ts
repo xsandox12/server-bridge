@@ -54,4 +54,35 @@ export async function getContainerLogs(id: string, tail = 100): Promise<string> 
   return stream.toString('utf8')
 }
 
+export async function execInContainer(
+  id: string,
+  cmd: string[],
+  env: string[] = []
+): Promise<{ stdout: string; stderr: string }> {
+  const container = docker.getContainer(id)
+  const exec = await container.exec({
+    Cmd: cmd,
+    Env: env,
+    AttachStdout: true,
+    AttachStderr: true,
+  })
+  const stream = await exec.start({ hijack: true, stdin: false })
+  return new Promise((resolve, reject) => {
+    const stdoutChunks: Buffer[] = []
+    const stderrChunks: Buffer[] = []
+    docker.modem.demuxStream(
+      stream,
+      { write: (c: Buffer) => stdoutChunks.push(c) } as any,
+      { write: (c: Buffer) => stderrChunks.push(c) } as any
+    )
+    stream.on('end', () =>
+      resolve({
+        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
+        stderr: Buffer.concat(stderrChunks).toString('utf8'),
+      })
+    )
+    stream.on('error', reject)
+  })
+}
+
 export { docker }
