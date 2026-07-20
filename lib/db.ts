@@ -167,6 +167,14 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('adv-prod','adv','adv.agonyang.com','https://adv.agonyang.com/',null,1,'production')
 
+// ── bubblechat (한글 음절 버블 타자 대전) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('bubblechat','bubblechat (한글 타자 대전)','/home/xsandox/bubblechat','/home/xsandox/bubblechat/docker-compose.yml',
+    'docker compose build bubblechat && docker compose up -d bubblechat',
+    'xsandox12/bubblechat','master','bubblechat')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('bubblechat-test','bubblechat','bubblechat',`http://${h}:9400/`,9400,0,'test')
+
 // ── game-schedule (편성표.GG) ──
 // 미니PC 미배포 (Vercel 배포 예정) — 실제 배포되면 domains 채울 것
 db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
