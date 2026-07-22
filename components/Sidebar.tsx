@@ -4,14 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const nav = [
-  { href: '/', label: '배포중', icon: '🚀' },
-  { href: '/services', label: '미배포', icon: '📦' },
+  { href: '/', label: '프로젝트', icon: '🚀' },
   { href: '/history', label: '배포 이력', icon: '🕐' },
   { href: '/dns', label: 'DNS', icon: '🌐' },
 ]
 
 const secondary = [
-  { href: '/projects', label: '프로젝트', icon: '📁' },
+  { href: '/projects', label: '탐색', icon: '📁' },
   { href: '/planning', label: '기획서', icon: '📝' },
   { href: '/bubblechat', label: 'bubbleChat', icon: '💬' },
   { href: '/settings', label: '설정', icon: '⚙️' },
