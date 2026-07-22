@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const body = await req.json() as Record<string, string>
-  const allowed = ['name', 'git_repo', 'git_branch', 'deploy_cmd', 'compose_file']
+  const allowed = ['name', 'git_repo', 'git_branch', 'deploy_cmd', 'compose_file', 'description', 'group_name']
   const fields = Object.keys(body).filter((k) => allowed.includes(k))
   if (fields.length === 0) return NextResponse.json({ error: 'no valid fields' }, { status: 400 })
 

@@ -22,6 +22,12 @@ body {
 .status-exited  { color: var(--muted); }
 .status-error   { color: var(--danger); }
 
+.proj-card { transition: border-color .15s, transform .15s; }
+.proj-card:hover { border-color: #475569; transform: translateY(-1px); }
+.desc-edit { opacity: 0; transition: opacity .15s; }
+.proj-card:hover .desc-edit { opacity: 1; }
+.tab-btn { transition: background .15s, color .15s; }
+
 .comment-highlight {
   text-decoration: underline;
   text-decoration-color: #ef4444;

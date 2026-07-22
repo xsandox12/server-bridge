@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin: 0; }
+  .sb-item { transition: opacity .15s, background .15s; }
+  .proj-card { transition: border-color .15s, transform .15s; }
+  .proj-card:hover { border-color: #475569; transform: translateY(-1px); }
+  .desc-edit { opacity: 0; transition: opacity .15s; }
+  .proj-card:hover .desc-edit { opacity: 1; }
+  .tab-btn { transition: background .15s, color .15s; }
+</style>
+</helmet>
+<div style="display:flex; min-height:100vh; background:#0f172a; color:#e2e8f0; font-family: Inter, system-ui, sans-serif;">
+
+  <aside style="width:208px; flex-shrink:0; display:flex; flex-direction:column; gap:4px; padding:16px; background:#0d1629; border-right:1px solid #334155;">
+    <div style="margin-bottom:24px; padding:0 8px;">
+      <span style="font-size:18px; font-weight:700; color:#3b82f6;">ServerBridge</span>
+      <p style="font-size:12px; margin:2px 0 0; color:#64748b;">배포 관리</p>
+    </div>
+    <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+      <div class="sb-item" style="display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; font-size:14px; background:{{ item.bg }}; color:{{ item.color }}; opacity:{{ item.opacity }};">
+        <span>{{ item.icon }}</span>{{ item.label }}
+      </div>
+    </sc-for>
+    <div style="margin:8px 12px; border-top:1px solid #334155;"></div>
+    <sc-for list="{{ navItemsSecondary }}" as="item" hint-placeholder-count="4">
+      <div class="sb-item" style="display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; font-size:14px; opacity:0.75;">
+        <span>{{ item.icon }}</span>{{ item.label }}
+      </div>
+    </sc-for>
+  </aside>
+
+  <main style="flex:1; padding:24px; overflow:auto;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+      <h1 style="font-size:24px; font-weight:700; margin:0;">{{ pageTitle }}</h1>
+      <p style="font-size:13px; color:#64748b; margin:0;">GitHub → 미니PC → Docker → DNS</p>
+    </div>
+
+    <div style="display:flex; gap:4px; margin-bottom:20px; background:#1e293b; border:1px solid #334155; border-radius:10px; padding:4px; width:fit-content;">
+      <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="2">
+        <button class="tab-btn" onClick="{{ tab.onClick }}" style="border:none; cursor:pointer; font-size:13px; font-weight:500; padding:7px 16px; border-radius:8px; background:{{ tab.bg }}; color:{{ tab.color }};">
+          {{ tab.label }} ({{ tab.count }})
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px;">
+      <sc-for list="{{ visibleProjects }}" as="p" hint-placeholder-count="6">
+        <div class="proj-card" style="background:#1e293b; border:1px solid #334155; border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; min-width:0;">
+
+          <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+            <div style="display:flex; align-items:center; gap:7px; min-width:0;">
+              <span style="width:8px; height:8px; border-radius:50%; flex-shrink:0; background:{{ p.statusColor }}; box-shadow:{{ p.statusGlow }};"></span>
+              <h3 style="font-size:14px; font-weight:600; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.name }}</h3>
+            </div>
+            <span style="font-size:10px; padding:2px 7px; border-radius:99px; flex-shrink:0; background:{{ p.statusBg }}; color:{{ p.statusColor }};">{{ p.statusLabel }}</span>
+          </div>
+
+          <div style="display:flex; align-items:flex-start; gap:6px;">
+            <p style="font-size:12px; line-height:1.45; color:#94a3b8; margin:0; flex:1; min-width:0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{{ p.description }}</p>
+            <span class="desc-edit" style="font-size:11px; color:#64748b; flex-shrink:0; cursor:pointer;" title="설명 편집">✎</span>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:auto;">
+            <sc-for list="{{ p.domains }}" as="d" hint-placeholder-count="1">
+              <a href="{{ d.url }}" target="_blank" rel="noreferrer" style="font-size:11px; text-decoration:none; padding:3px 8px; border-radius:99px; display:flex; align-items:center; gap:4px; background:#0f172a; border:1px solid #334155; color:{{ d.color }};">
+                <span style="font-size:8px; padding:0 4px; border-radius:3px; background:{{ d.badgeBg }};">{{ d.badgeLabel }}</span>
+                {{ d.label }}
+              </a>
+            </sc-for>
+            <sc-if value="{{ p.noDomains }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:11px; color:#475569;">도메인 없음</span>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ emptyState }}" hint-placeholder-val="{{ false }}">
+      <p style="text-align:center; padding:48px 0; color:#64748b; font-size:14px;">해당 상태의 프로젝트가 없습니다.</p>
+    </sc-if>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { activeTab: 'deployed' };
+
+  projects = [
+    { id: 'agonyang', name: 'main', description: '치지직 분석 서비스의 메인 nginx 라우팅 및 진입점', state: 'running', deployed: true,
+      domains: [{ label: 'agonyang.com', url: 'https://www.agonyang.com', env: 'production' }] },
+    { id: 'chzzk-analyze', name: 'chzzk-analyze', description: '치지직 방송 데이터 분석 및 통계 대시보드', state: 'running', deployed: true,
+      domains: [{ label: 'chzzk-analyze', url: 'https://www.agonyang.com/chzzk-analyze/', env: 'production' }] },
+    { id: 'chzzk-dashboard', name: 'chzzk-dashboard', description: '치지직 스트리머용 실시간 시청자 지표 대시보드', state: 'running', deployed: true,
+      domains: [{ label: 'chzzk-dashboard', url: 'https://www.agonyang.com/chzzk-dashboard/', env: 'production' }] },
+    { id: 'drawingtool', name: 'drawingtool (도면 설계)', description: '2D 도면을 그리고 치수를 계산하는 설계 도구', state: 'stopped', deployed: true,
+      domains: [{ label: 'drawingtool.agonyang.com', url: 'https://drawingtool.agonyang.com/', env: 'production' }] },
+    { id: 'adv', name: 'adv (광고 관리)', description: '광고 캠페인과 소재를 등록하고 집행 현황을 관리', state: 'running', deployed: true,
+      domains: [{ label: 'adv.agonyang.com', url: 'https://adv.agonyang.com/', env: 'production' }] },
+    { id: 'bubblechat', name: 'bubblechat (한글 타자 대전)', description: '한글 음절 버블을 터뜨리는 실시간 타자 대전 게임', state: 'running', deployed: true,
+      domains: [{ label: 'bubblechat.agonyang.com', url: 'https://bubblechat.agonyang.com/', env: 'production' }] },
+    { id: 'coldstorage', name: 'coldstorage (재고/견적 관리)', description: '냉동 창고 재고와 거래처 견적서를 관리하는 내부 툴', state: 'stopped', deployed: false,
+      domains: [{ label: 'coldstorage', url: 'http://localhost:9000/', env: 'test' }] },
+  ];
+
+  statusMeta(state) {
+    if (state === 'running') return { color: '#4ade80', bg: 'rgba(74,222,128,0.15)', label: '실행 중', glow: '0 0 6px #4ade80' };
+    return { color: '#94a3b8', bg: 'rgba(148,163,184,0.15)', label: '중지됨', glow: 'none' };
+  }
+
+  domainMeta(d) {
+    if (d.env === 'production') return { ...d, color: '#4ade80', badgeBg: 'rgba(74,222,128,0.15)', badgeLabel: 'PROD' };
+    return { ...d, color: '#fb923c', badgeBg: 'rgba(251,146,60,0.15)', badgeLabel: 'TEST' };
+  }
+
+  renderVals() {
+    const deployed = this.projects.filter(p => p.deployed);
+    const undeployed = this.projects.filter(p => !p.deployed);
+    const active = this.state.activeTab;
+    const visible = (active === 'deployed' ? deployed : undeployed).map(p => {
+      const sm = this.statusMeta(p.state);
+      return {
+        ...p,
+        statusColor: sm.color, statusBg: sm.bg, statusLabel: sm.label, statusGlow: sm.glow,
+        domains: p.domains.map(d => this.domainMeta(d)),
+        noDomains: p.domains.length === 0,
+      };
+    });
+
+    return {
+      pageTitle: active === 'deployed' ? '배포중' : '미배포',
+      navItems: [
+        { href: '/', label: '배포중', icon: '🚀', bg: active === 'deployed' ? '#3b82f6' : 'transparent', color: active === 'deployed' ? '#fff' : '#e2e8f0', opacity: 1 },
+        { href: '/services', label: '미배포', icon: '📦', bg: active === 'undeployed' ? '#3b82f6' : 'transparent', color: active === 'undeployed' ? '#fff' : '#e2e8f0', opacity: 1 },
+        { href: '/history', label: '배포 이력', icon: '🕐', bg: 'transparent', color: '#e2e8f0', opacity: 0.75 },
+        { href: '/dns', label: 'DNS', icon: '🌐', bg: 'transparent', color: '#e2e8f0', opacity: 0.75 },
+      ],
+      navItemsSecondary: [
+        { label: '프로젝트', icon: '📁' },
+        { label: '기획서', icon: '📝' },
+        { label: 'bubbleChat', icon: '💬' },
+        { label: '설정', icon: '⚙️' },
+      ],
+      tabs: [
+        { label: '배포중', count: deployed.length, bg: active === 'deployed' ? '#3b82f6' : 'transparent', color: active === 'deployed' ? '#fff' : '#94a3b8', onClick: () => this.setState({ activeTab: 'deployed' }) },
+        { label: '미배포', count: undeployed.length, bg: active === 'undeployed' ? '#3b82f6' : 'transparent', color: active === 'undeployed' ? '#fff' : '#94a3b8', onClick: () => this.setState({ activeTab: 'undeployed' }) },
+      ],
+      visibleProjects: visible,
+      emptyState: visible.length === 0,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

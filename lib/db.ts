@@ -21,6 +21,7 @@ db.exec(`
     git_repo TEXT,
     git_branch TEXT DEFAULT 'main',
     docker_service TEXT,
+    description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -67,6 +68,9 @@ for (const sql of [
   `ALTER TABLE deploy_logs ADD COLUMN git_commit TEXT`,
   `ALTER TABLE domains ADD COLUMN env TEXT DEFAULT 'test'`,
   `ALTER TABLE projects ADD COLUMN docker_service TEXT`,
+  `ALTER TABLE projects ADD COLUMN description TEXT`,
+  `ALTER TABLE projects ADD COLUMN sort_order INTEGER`,
+  `ALTER TABLE projects ADD COLUMN group_name TEXT`,
 ]) {
   try { db.exec(sql) } catch { /* 이미 존재 */ }
 }
