@@ -41,6 +41,10 @@ export default function ProjectCard({
   const [savingDesc, setSavingDesc] = useState(false)
 
   useEffect(() => {
+    if (!editingDesc) setDescription(project.description ?? '')
+  }, [project.description, editingDesc])
+
+  useEffect(() => {
     const fetchContainers = () => {
       fetch('/api/docker/containers').then((r) => r.json()).then((data) => {
         if (Array.isArray(data)) setContainers(data)
