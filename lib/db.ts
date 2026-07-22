@@ -127,8 +127,8 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
   .run('chzzk-analyze-test','chzzk-analyze','chzzk-analyze',`http://${h}:4000/chzzk-analyze/`,4000,0,'test')
 db.prepare(`UPDATE domains SET url=? WHERE id='chzzk-analyze-test'`).run(`http://${h}:4000/chzzk-analyze/`)
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
-  .run('chzzk-analyze-prod','chzzk-analyze','www.agonyang.com/chzzk-analyze','https://www.agonyang.com/chzzk-analyze/',null,1,'production')
-db.prepare(`UPDATE domains SET label='www.agonyang.com/chzzk-analyze' WHERE id='chzzk-analyze-prod'`).run()
+  .run('chzzk-analyze-prod','chzzk-analyze','agonyang.com/chzzk-analyze','https://www.agonyang.com/chzzk-analyze/',null,1,'production')
+db.prepare(`UPDATE domains SET label='agonyang.com/chzzk-analyze' WHERE id='chzzk-analyze-prod'`).run()
 
 // ── chzzk-dashboard ──
 db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch) VALUES (?,?,?,?,?,?,?)`)
@@ -142,8 +142,8 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
   .run('chzzk-dashboard-test','chzzk-dashboard','chzzk-dashboard',`http://${h}:4000/chzzk-dashboard/`,4000,0,'test')
 db.prepare(`UPDATE domains SET url=? WHERE id='chzzk-dashboard-test'`).run(`http://${h}:4000/chzzk-dashboard/`)
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
-  .run('chzzk-dashboard-prod','chzzk-dashboard','www.agonyang.com/chzzk-dashboard','https://www.agonyang.com/chzzk-dashboard/',null,1,'production')
-db.prepare(`UPDATE domains SET label='www.agonyang.com/chzzk-dashboard' WHERE id='chzzk-dashboard-prod'`).run()
+  .run('chzzk-dashboard-prod','chzzk-dashboard','agonyang.com/chzzk-dashboard','https://www.agonyang.com/chzzk-dashboard/',null,1,'production')
+db.prepare(`UPDATE domains SET label='agonyang.com/chzzk-dashboard' WHERE id='chzzk-dashboard-prod'`).run()
 
 // docker_service 설정 (컨테이너 매칭용)
 db.prepare(`UPDATE projects SET docker_service='nginx'            WHERE id='agonyang'`).run()
