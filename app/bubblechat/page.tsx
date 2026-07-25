@@ -4,8 +4,12 @@ import { useEffect, useState } from 'react'
 
 type WordEntry = { word: string; count: number; lastAt: string }
 type AddStatus = 'adding' | 'added' | 'exists' | 'error'
+type Lang = 'kr' | 'en'
 
 export default function BubbleChatPage() {
+  const [lang, setLang] = useState<Lang>('kr')
+  const apiBase = lang === 'kr' ? '/api/bubblechat' : '/api/bubblechat-en'
+
   const [words, setWords] = useState<WordEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -21,11 +25,11 @@ export default function BubbleChatPage() {
   const [lookupError, setLookupError] = useState('')
   const [checking, setChecking] = useState(false)
 
-  const fetchWords = async () => {
+  const fetchWords = async (base: string) => {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/bubblechat/unknown-words')
+      const res = await fetch(`${base}/unknown-words`)
       const data = await res.json()
       if (data.error) setError(data.error)
       setWords(data.words ?? [])
@@ -35,10 +39,10 @@ export default function BubbleChatPage() {
     setLoading(false)
   }
 
-  const fetchCustomWords = async () => {
+  const fetchCustomWords = async (base: string) => {
     setCustomLoading(true)
     try {
-      const res = await fetch('/api/bubblechat/dictionary/custom')
+      const res = await fetch(`${base}/dictionary/custom`)
       const data = await res.json()
       setCustomWords(data.words ?? [])
     } catch {
@@ -48,9 +52,14 @@ export default function BubbleChatPage() {
   }
 
   useEffect(() => {
-    fetchWords()
-    fetchCustomWords()
-  }, [])
+    setQuery('')
+    setLookup(null)
+    setLookupError('')
+    setAddStatus({})
+    fetchWords(apiBase)
+    fetchCustomWords(apiBase)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang])
 
   const checkWord = async () => {
     const word = query.trim()
@@ -59,7 +68,7 @@ export default function BubbleChatPage() {
     setLookup(null)
     setLookupError('')
     try {
-      const res = await fetch(`/api/bubblechat/dictionary?word=${encodeURIComponent(word)}`)
+      const res = await fetch(`${apiBase}/dictionary?word=${encodeURIComponent(word)}`)
       const data = await res.json()
       if (data.error) setLookupError(data.error)
       else setLookup(data)
@@ -72,7 +81,7 @@ export default function BubbleChatPage() {
   const addToDictionary = async (word: string) => {
     setAddStatus((s) => ({ ...s, [word]: 'adding' }))
     try {
-      const res = await fetch('/api/bubblechat/dictionary', {
+      const res = await fetch(`${apiBase}/dictionary`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word }),
@@ -92,7 +101,7 @@ export default function BubbleChatPage() {
   const resolveWord = async (word: string) => {
     setResolving((s) => ({ ...s, [word]: true }))
     try {
-      const res = await fetch('/api/bubblechat/unknown-words', {
+      const res = await fetch(`${apiBase}/unknown-words`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word }),
@@ -107,7 +116,7 @@ export default function BubbleChatPage() {
   const deleteCustomWord = async (word: string) => {
     setCustomBusy((s) => ({ ...s, [word]: true }))
     try {
-      const res = await fetch('/api/bubblechat/dictionary', {
+      const res = await fetch(`${apiBase}/dictionary`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word }),
@@ -126,9 +135,29 @@ export default function BubbleChatPage() {
     }
   }
 
+  const TabButton = ({ value, label }: { value: Lang; label: string }) => (
+    <button
+      onClick={() => setLang(value)}
+      className="text-sm px-4 py-1.5 rounded-lg"
+      style={{
+        background: lang === value ? 'var(--accent)' : 'var(--background)',
+        color: lang === value ? '#fff' : 'var(--foreground)',
+        border: '1px solid var(--card-border)',
+      }}
+    >
+      {label}
+    </button>
+  )
+
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-8">
-      <h1 className="text-2xl font-bold">bubbleChat</h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold">bubbleChat</h1>
+        <div className="flex gap-2">
+          <TabButton value="kr" label="KR" />
+          <TabButton value="en" label="EN" />
+        </div>
+      </div>
 
       <section
         className="rounded-xl p-5"
@@ -173,7 +202,7 @@ export default function BubbleChatPage() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">오타/미등록 단어 로그</h2>
           <button
-            onClick={fetchWords}
+            onClick={() => fetchWords(apiBase)}
             className="text-sm px-4 py-2 rounded-lg"
             style={{ background: 'var(--background)', border: '1px solid var(--card-border)' }}
           >
