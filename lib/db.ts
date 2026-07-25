@@ -183,4 +183,14 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('bubblechat-prod','bubblechat','bubblechat.agonyang.com','https://bubblechat.agonyang.com/',null,1,'production')
 
+// ── bubblechat-en (영어 알파벳 버블 타자 대전) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('bubblechat-en','bubblechat-en (영어 타자 대전)','/home/xsandox/bubblechat-en','/home/xsandox/bubblechat-en/docker-compose.yml',
+    'docker compose build bubblechat-en && docker compose up -d bubblechat-en',
+    null,'master','bubblechat-en')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('bubblechat-en-test','bubblechat-en','bubblechat-en',`http://${h}:9500/`,9500,0,'test')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('bubblechat-en-prod','bubblechat-en','bubblechat-en.agonyang.com','https://bubblechat-en.agonyang.com/',null,1,'production')
+
 export default db
