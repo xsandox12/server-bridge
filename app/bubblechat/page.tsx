@@ -356,6 +356,7 @@ type AdminUser = {
   best_survival_ms: number
   created_at: number
   last_login_at: number | null
+  is_admin: number
 }
 
 function AccountsTab() {
@@ -367,6 +368,7 @@ function AccountsTab() {
   const [pointsInput, setPointsInput] = useState<Record<number, string>>({})
   const [busy, setBusy] = useState<Record<number, boolean>>({})
   const [pointsMsg, setPointsMsg] = useState<Record<number, string>>({})
+  const [adminBusy, setAdminBusy] = useState<Record<number, boolean>>({})
 
   const search = async (q: string) => {
     setLoading(true)
@@ -411,6 +413,21 @@ function AccountsTab() {
       setPointsMsg((s) => ({ ...s, [userId]: String(err) }))
     } finally {
       setBusy((s) => ({ ...s, [userId]: false }))
+    }
+  }
+
+  const applyAdmin = async (userId: number, nextIsAdmin: boolean) => {
+    setAdminBusy((s) => ({ ...s, [userId]: true }))
+    try {
+      const res = await fetch('/api/bubblechat/users/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, isAdmin: nextIsAdmin }),
+      })
+      const data = await res.json()
+      if (!data.error) setUsers((list) => list.map((u) => (u.id === userId ? data.user : u)))
+    } finally {
+      setAdminBusy((s) => ({ ...s, [userId]: false }))
     }
   }
 
@@ -460,6 +477,7 @@ function AccountsTab() {
                   <th className="pb-2 font-normal">가입일</th>
                   <th className="pb-2 font-normal">마지막 로그인</th>
                   <th className="pb-2 font-normal">포인트 지급/회수</th>
+                  <th className="pb-2 font-normal">관리자(커뮤니티)</th>
                 </tr>
               </thead>
               <tbody>
@@ -502,6 +520,20 @@ function AccountsTab() {
                           <span className="text-xs" style={{ color: 'var(--muted)' }}>{pointsMsg[u.id]}</span>
                         )}
                       </div>
+                    </td>
+                    <td className="py-2">
+                      <button
+                        onClick={() => applyAdmin(u.id, !u.is_admin)}
+                        disabled={adminBusy[u.id]}
+                        className="text-xs px-2.5 py-1 rounded-lg"
+                        style={
+                          u.is_admin
+                            ? { background: 'var(--accent)', color: '#fff' }
+                            : { background: 'var(--background)', border: '1px solid var(--card-border)', color: 'var(--foreground)' }
+                        }
+                      >
+                        {u.is_admin ? '관리자 ✓ (해제)' : '관리자 지정'}
+                      </button>
                     </td>
                   </tr>
                 ))}
