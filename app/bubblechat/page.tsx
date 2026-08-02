@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import DeployPanel from '@/components/DeployPanel'
 
 type WordEntry = { word: string; count: number; lastAt: string }
 type AddStatus = 'adding' | 'added' | 'exists' | 'error'
 type Lang = 'kr' | 'en'
-type MainTab = 'dict' | 'accounts' | 'stats'
+type MainTab = 'dict' | 'accounts' | 'stats' | 'deploy'
 
 const card: React.CSSProperties = { background: 'var(--card)', border: '1px solid var(--card-border)' }
 
@@ -44,12 +45,36 @@ export default function BubbleChatPage() {
           <MainTabButton active={tab === 'dict'} label="사전 관리" onClick={() => setTab('dict')} />
           <MainTabButton active={tab === 'accounts'} label="계정 관리" onClick={() => setTab('accounts')} />
           <MainTabButton active={tab === 'stats'} label="통계" onClick={() => setTab('stats')} />
+          <MainTabButton active={tab === 'deploy'} label="배포" onClick={() => setTab('deploy')} />
         </div>
       </div>
 
       {tab === 'dict' && <DictionaryTab />}
       {tab === 'accounts' && <AccountsTab />}
       {tab === 'stats' && <StatsTab />}
+      {tab === 'deploy' && <DeployTab />}
+    </div>
+  )
+}
+
+function DeployTab() {
+  return (
+    <div className="flex flex-col gap-6">
+      <section className="rounded-xl p-5" style={card}>
+        <h2 className="text-lg font-semibold mb-1">테스트 서버</h2>
+        <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
+          내부망 전용 · http://112.168.76.70:9401 · 새 기능은 먼저 여기로 배포해서 확인하세요.
+        </p>
+        <DeployPanel projectId="bubblechat-test" />
+      </section>
+
+      <section className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid #7f1d1d' }}>
+        <h2 className="text-lg font-semibold mb-1">프로덕션</h2>
+        <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
+          https://bubblechat.agonyang.com · 실제 사용자에게 즉시 반영됩니다. 테스트 서버에서 먼저 확인한 뒤 배포하세요.
+        </p>
+        <DeployPanel projectId="bubblechat" />
+      </section>
     </div>
   )
 }
