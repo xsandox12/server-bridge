@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 
 export async function POST(req: NextRequest) {
-  const { projectId } = await req.json()
+  const { projectId, notes } = await req.json()
 
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId) as
     | { id: string; name: string; path: string; deploy_cmd: string }
@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
 
   const jobId = randomUUID()
   db.prepare(
-    'INSERT INTO deploy_logs (id, project_id, command, status) VALUES (?, ?, ?, ?)'
-  ).run(jobId, projectId, project.deploy_cmd, 'running')
+    'INSERT INTO deploy_logs (id, project_id, command, status, notes) VALUES (?, ?, ?, ?, ?)'
+  ).run(jobId, projectId, project.deploy_cmd, 'running', notes ?? null)
 
   return NextResponse.json({ jobId })
 }

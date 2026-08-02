@@ -10,6 +10,8 @@ export default function DeployPanel({ projectId }: Props) {
   const [deploying, setDeploying] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
   const [status, setStatus] = useState<'idle' | 'running' | 'success' | 'failed'>('idle')
+  const [notes, setNotes] = useState('')
+  const [draftingNotes, setDraftingNotes] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -17,6 +19,21 @@ export default function DeployPanel({ projectId }: Props) {
       logRef.current.scrollTop = logRef.current.scrollHeight
     }
   }, [logs])
+
+  const handleDraftNotes = async () => {
+    setDraftingNotes(true)
+    try {
+      const res = await fetch('/api/deploy/draft-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId }),
+      })
+      const data = await res.json()
+      if (data.notes) setNotes(data.notes)
+    } finally {
+      setDraftingNotes(false)
+    }
+  }
 
   const handleDeploy = async () => {
     setDeploying(true)
@@ -26,7 +43,7 @@ export default function DeployPanel({ projectId }: Props) {
     const res = await fetch('/api/deploy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectId }),
+      body: JSON.stringify({ projectId, notes }),
     })
 
     if (!res.ok) {
@@ -67,6 +84,29 @@ export default function DeployPanel({ projectId }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium" style={{ color: 'var(--muted)' }}>업데이트 내역</span>
+          <button
+            onClick={handleDraftNotes}
+            disabled={draftingNotes || deploying}
+            className="text-xs px-2 py-0.5 rounded transition-opacity"
+            style={{ background: '#1e293b', color: '#94a3b8', opacity: draftingNotes ? 0.6 : 1 }}
+          >
+            {draftingNotes ? '생성 중…' : '✨ AI 초안 생성'}
+          </button>
+        </div>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          disabled={deploying}
+          placeholder="이번 배포에서 바뀐 내용을 적어주세요"
+          rows={3}
+          className="rounded-lg p-2 text-xs font-mono resize-y"
+          style={{ background: '#020617', border: '1px solid var(--card-border)', color: '#e2e8f0' }}
+        />
+      </div>
+
       <div className="flex items-center gap-3">
         <button
           onClick={handleDeploy}

@@ -71,6 +71,7 @@ for (const sql of [
   `ALTER TABLE projects ADD COLUMN description TEXT`,
   `ALTER TABLE projects ADD COLUMN sort_order INTEGER`,
   `ALTER TABLE projects ADD COLUMN group_name TEXT`,
+  `ALTER TABLE deploy_logs ADD COLUMN notes TEXT`,
 ]) {
   try { db.exec(sql) } catch { /* 이미 존재 */ }
 }

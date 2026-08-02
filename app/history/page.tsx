@@ -2,7 +2,7 @@ import db from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-type Log = { id: string; project_id: string; command: string; status: string; git_commit: string | null; started_at: string; finished_at: string | null }
+type Log = { id: string; project_id: string; command: string; status: string; git_commit: string | null; notes: string | null; started_at: string; finished_at: string | null }
 type Project = { id: string; name: string }
 
 function StatusBadge({ status }: { status: string }) {
@@ -54,6 +54,9 @@ export default function HistoryPage() {
                     )}
                   </div>
                   <p className="text-xs font-mono mt-0.5 truncate" style={{ color: 'var(--muted)' }}>{log.command}</p>
+                  {log.notes && (
+                    <p className="text-xs mt-1 whitespace-pre-wrap" style={{ color: 'var(--foreground)' }}>{log.notes}</p>
+                  )}
                 </div>
 
                 <div className="text-right flex-shrink-0">
