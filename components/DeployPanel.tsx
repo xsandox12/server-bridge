@@ -4,9 +4,10 @@ import { useState, useRef, useEffect } from 'react'
 
 interface Props {
   projectId: string
+  onDeployed?: () => void
 }
 
-export default function DeployPanel({ projectId }: Props) {
+export default function DeployPanel({ projectId, onDeployed }: Props) {
   const [deploying, setDeploying] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
   const [status, setStatus] = useState<'idle' | 'running' | 'success' | 'failed'>('idle')
@@ -64,6 +65,7 @@ export default function DeployPanel({ projectId }: Props) {
         setStatus(data.status)
         setDeploying(false)
         es.close()
+        if (data.status === 'success') onDeployed?.()
       } else if (data.type === 'error') {
         setLogs((prev) => [...prev, '❌ ' + data.message])
         setStatus('failed')

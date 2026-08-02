@@ -1,6 +1,6 @@
 import db from '@/lib/db'
 import { NextRequest } from 'next/server'
-import { spawn } from 'child_process'
+import { spawn, execSync } from 'child_process'
 import path from 'path'
 
 type Params = { params: Promise<{ jobId: string }> }
@@ -43,7 +43,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
       proc.on('close', (code) => {
         const status = code === 0 ? 'success' : 'failed'
-        db.prepare("UPDATE deploy_logs SET status = ?, finished_at = datetime('now') WHERE id = ?").run(status, jobId)
+        let commit: string | null = null
+        if (status === 'success') {
+          try {
+            commit = execSync(`git -C ${JSON.stringify(workdir)} rev-parse --short HEAD`, { encoding: 'utf8' }).trim()
+          } catch { /* git repo 아니거나 조회 실패 시 무시 */ }
+        }
+        db.prepare(
+          "UPDATE deploy_logs SET status = ?, finished_at = datetime('now'), git_commit = COALESCE(?, git_commit) WHERE id = ?"
+        ).run(status, commit, jobId)
         send({ type: 'done', status })
         controller.close()
       })

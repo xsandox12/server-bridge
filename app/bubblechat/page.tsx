@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import DeployPanel from '@/components/DeployPanel'
+import BubbleChatVersions from '@/components/BubbleChatVersions'
 
 type WordEntry = { word: string; count: number; lastAt: string }
 type AddStatus = 'adding' | 'added' | 'exists' | 'error'
@@ -58,25 +58,7 @@ export default function BubbleChatPage() {
 }
 
 function DeployTab() {
-  return (
-    <div className="flex flex-col gap-6">
-      <section className="rounded-xl p-5" style={card}>
-        <h2 className="text-lg font-semibold mb-1">테스트 서버</h2>
-        <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
-          내부망 전용 · http://112.168.76.70:9401 · 새 기능은 먼저 여기로 배포해서 확인하세요.
-        </p>
-        <DeployPanel projectId="bubblechat-test" />
-      </section>
-
-      <section className="rounded-xl p-5" style={{ background: 'var(--card)', border: '1px solid #7f1d1d' }}>
-        <h2 className="text-lg font-semibold mb-1">프로덕션</h2>
-        <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
-          https://bubblechat.agonyang.com · 실제 사용자에게 즉시 반영됩니다. 테스트 서버에서 먼저 확인한 뒤 배포하세요.
-        </p>
-        <DeployPanel projectId="bubblechat" />
-      </section>
-    </div>
-  )
+  return <BubbleChatVersions />
 }
 
 function DictionaryTab() {
