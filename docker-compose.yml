@@ -20,6 +20,7 @@ services:
     networks:
       - default
       - ai-cluster
+      - main
     restart: unless-stopped
 
 volumes:
@@ -29,3 +30,6 @@ networks:
   ai-cluster:
     external: true
     name: ai-cluster_default
+  main:
+    external: true
+    name: main_default

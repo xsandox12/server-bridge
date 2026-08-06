@@ -59,6 +59,31 @@ db.exec(`
     key TEXT PRIMARY KEY,
     value TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS agonyang_categories (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    cols INTEGER NOT NULL DEFAULT 2,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS agonyang_banners (
+    id TEXT PRIMARY KEY,
+    category_id TEXT NOT NULL REFERENCES agonyang_categories(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    image_url TEXT,
+    link_url TEXT NOT NULL,
+    icon TEXT,
+    accent_color TEXT,
+    meta TEXT,
+    is_live INTEGER NOT NULL DEFAULT 0,
+    open_in_new_tab INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `)
 
 // 기존 DB 마이그레이션 (컬럼 없으면 추가)
@@ -193,5 +218,30 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
   .run('bubblechat-en-test','bubblechat-en','bubblechat-en',`http://${h}:9500/`,9500,0,'test')
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('bubblechat-en-prod','bubblechat-en','bubblechat-en.agonyang.com','https://bubblechat-en.agonyang.com/',null,1,'production')
+
+// ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
+const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
+if (agonyangCatCount.cnt === 0) {
+  db.prepare(`INSERT INTO agonyang_categories (id, name, cols, sort_order) VALUES (?, ?, ?, ?)`)
+    .run('live', '방송', 1, 0)
+  db.prepare(`INSERT INTO agonyang_categories (id, name, cols, sort_order) VALUES (?, ?, ?, ?)`)
+    .run('services', '서비스', 2, 1)
+
+  const insertBanner = db.prepare(`INSERT INTO agonyang_banners
+    (id, category_id, title, description, image_url, link_url, icon, accent_color, meta, is_live, open_in_new_tab, is_active, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+
+  insertBanner.run('agonyang-live', 'live', '아고냥 라이브', '치지직에서 아고냥의 실시간 방송을 시청합니다.',
+    '/icon/agonyang_icon_46.png', 'https://chzzk.naver.com/live/6f4072c1cdb6e6188a6982ddd64ee556',
+    '방', '#fb7360', null, 0, 1, 1, 0)
+
+  insertBanner.run('chzzk-analyze-banner', 'services', 'Chzzk Trend Analysis', '실시간 시청자 현황, 카테고리 트렌드, 스트리머 히스토리를 분석합니다.',
+    '/chzzk-analyze/chzzk_analyze_icon_32.png', '/chzzk-analyze/',
+    '분', '#4da6ff', null, 0, 0, 1, 0)
+
+  insertBanner.run('chzzk-dashboard-banner', 'services', 'Chzzk Dashboard', '팔로잉 스트리머의 방송 현황을 대시보드로 한눈에 확인합니다.',
+    '/chzzk-dashboard/dashboard_icon_32.png', '/chzzk-dashboard/',
+    '대', '#4ddb8f', null, 0, 0, 1, 1)
+}
 
 export default db
