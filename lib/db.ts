@@ -219,6 +219,14 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('bubblechat-en-prod','bubblechat-en','bubblechat-en.agonyang.com','https://bubblechat-en.agonyang.com/',null,1,'production')
 
+// ── hex21 (육각 블랙잭 퍼즐) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('hex21','hex21 (육각 블랙잭 퍼즐)','/home/xsandox/hex21','/home/xsandox/hex21/docker-compose.yml',
+    'docker compose build hex21 && docker compose up -d hex21',
+    null,'master','hex21')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('hex21-test','hex21','hex21',`http://${h}:9600/`,9600,0,'test')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
