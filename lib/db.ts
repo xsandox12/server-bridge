@@ -227,6 +227,14 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('hex21-test','hex21','hex21',`http://${h}:9600/`,9600,0,'test')
 
+// ── fishgame (시청자 참여형 낚시 미니게임) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('fishgame','fishgame (낚시 미니게임)','/home/xsandox/fishgame','/home/xsandox/fishgame/docker-compose.yml',
+    'git pull origin master && docker compose build fishgame && docker compose up -d fishgame',
+    'xsandox12/fishgame','master','fishgame')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('fishgame-test','fishgame','fishgame',`http://${h}:9700/`,9700,0,'test')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
