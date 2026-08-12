@@ -235,6 +235,16 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('fishgame-test','fishgame','fishgame',`http://${h}:9700/`,9700,0,'test')
 
+// ── smartorder (테이블오더 POS) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('smartorder','smartorder (테이블오더 POS)','/home/xsandox/smartorder','/home/xsandox/smartorder/docker-compose.yml',
+    'git pull origin main && docker compose build smartorder-server smartorder-web-admin smartorder-web-table && docker compose up -d smartorder-server smartorder-web-admin smartorder-web-table',
+    'xsandox12/smartorder','main',null)
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('smartorder-admin-test','smartorder','smartorder-admin',`http://${h}:9301/`,9301,0,'test')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('smartorder-table-test','smartorder','smartorder-table',`http://${h}:9302/`,9302,0,'test')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
