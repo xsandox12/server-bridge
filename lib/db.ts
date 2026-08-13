@@ -245,6 +245,14 @@ db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_exter
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('smartorder-table-test','smartorder','smartorder-table',`http://${h}:9302/`,9302,0,'test')
 
+// ── openmarket (판매자입점 중개몰) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('openmarket','openmarket (판매자입점 중개몰)','/home/xsandox/openmarket','/home/xsandox/openmarket/docker-compose.yml',
+    'git pull origin master && docker compose build openmarket && docker compose up -d openmarket',
+    'xsandox12/openmarket','master','openmarket')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('openmarket-test','openmarket','openmarket',`http://${h}:9800/`,9800,0,'test')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
