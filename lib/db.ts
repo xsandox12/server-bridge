@@ -263,6 +263,14 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('openmarket-test','openmarket','openmarket',`http://${h}:9800/`,9800,0,'test')
 
+// ── stock-dashboard (국내 주식 관심종목 스크리닝 대시보드) ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('stock-dashboard','stock-dashboard (주식 관심종목 대시보드)','/home/xsandox/stock-dashboard','/home/xsandox/stock-dashboard/docker-compose.yml',
+    'git pull origin master && docker compose build stock-dashboard && docker compose up -d stock-dashboard',
+    'xsandox12/stock-dashboard','master','stock-dashboard')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('stock-dashboard-test','stock-dashboard','stock-dashboard',`http://${h}:9900/`,9900,0,'test')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
