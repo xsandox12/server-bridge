@@ -84,6 +84,16 @@ db.exec(`
     sort_order INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS system_stats_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+    cpu_percent REAL,
+    mem_percent REAL,
+    load1 REAL,
+    disk_percent REAL
+  );
+  CREATE INDEX IF NOT EXISTS idx_system_stats_history_ts ON system_stats_history(ts);
 `)
 
 // 기존 DB 마이그레이션 (컬럼 없으면 추가)

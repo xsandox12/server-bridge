@@ -55,6 +55,10 @@ export interface ContainerStat {
   memUsageBytes: number
   memLimitBytes: number
   memPercent: number
+  netRxBytes: number
+  netTxBytes: number
+  blkReadBytes: number
+  blkWriteBytes: number
 }
 
 export async function getContainerStats(): Promise<ContainerStat[]> {
@@ -73,6 +77,21 @@ export async function getContainerStats(): Promise<ContainerStat[]> {
       const memLimitBytes = stats.memory_stats.limit
       const memPercent = memLimitBytes > 0 ? (memUsageBytes / memLimitBytes) * 100 : 0
 
+      let netRxBytes = 0
+      let netTxBytes = 0
+      for (const iface of Object.values(stats.networks ?? {})) {
+        netRxBytes += iface.rx_bytes ?? 0
+        netTxBytes += iface.tx_bytes ?? 0
+      }
+
+      let blkReadBytes = 0
+      let blkWriteBytes = 0
+      for (const entry of stats.blkio_stats?.io_service_bytes_recursive ?? []) {
+        const op = entry.op?.toLowerCase()
+        if (op === 'read') blkReadBytes += entry.value ?? 0
+        else if (op === 'write') blkWriteBytes += entry.value ?? 0
+      }
+
       return {
         id: c.Id.slice(0, 12),
         name: c.Names[0]?.replace(/^\//, '') ?? c.Id.slice(0, 12),
@@ -80,6 +99,10 @@ export async function getContainerStats(): Promise<ContainerStat[]> {
         memUsageBytes: Math.max(0, memUsageBytes),
         memLimitBytes,
         memPercent: Math.max(0, memPercent),
+        netRxBytes,
+        netTxBytes,
+        blkReadBytes,
+        blkWriteBytes,
       }
     })
   )
