@@ -48,6 +48,48 @@ export async function startContainer(id: string): Promise<void> {
   await container.start()
 }
 
+export interface ContainerStat {
+  id: string
+  name: string
+  cpuPercent: number
+  memUsageBytes: number
+  memLimitBytes: number
+  memPercent: number
+}
+
+export async function getContainerStats(): Promise<ContainerStat[]> {
+  const containers = await docker.listContainers({ filters: JSON.stringify({ status: ['running'] }) })
+
+  const results = await Promise.allSettled(
+    containers.map(async (c) => {
+      const stats = await docker.getContainer(c.Id).stats({ stream: false })
+
+      const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - stats.precpu_stats.cpu_usage.total_usage
+      const systemDelta = stats.cpu_stats.system_cpu_usage - stats.precpu_stats.system_cpu_usage
+      const onlineCpus = stats.cpu_stats.online_cpus || stats.cpu_stats.cpu_usage.percpu_usage?.length || 1
+      const cpuPercent = systemDelta > 0 && cpuDelta > 0 ? (cpuDelta / systemDelta) * onlineCpus * 100 : 0
+
+      const memUsageBytes = stats.memory_stats.usage - (stats.memory_stats.stats?.cache ?? 0)
+      const memLimitBytes = stats.memory_stats.limit
+      const memPercent = memLimitBytes > 0 ? (memUsageBytes / memLimitBytes) * 100 : 0
+
+      return {
+        id: c.Id.slice(0, 12),
+        name: c.Names[0]?.replace(/^\//, '') ?? c.Id.slice(0, 12),
+        cpuPercent: Math.max(0, cpuPercent),
+        memUsageBytes: Math.max(0, memUsageBytes),
+        memLimitBytes,
+        memPercent: Math.max(0, memPercent),
+      }
+    })
+  )
+
+  return results
+    .filter((r): r is PromiseFulfilledResult<ContainerStat> => r.status === 'fulfilled')
+    .map((r) => r.value)
+    .sort((a, b) => b.cpuPercent - a.cpuPercent)
+}
+
 export async function getContainerLogs(id: string, tail = 100): Promise<string> {
   const container = docker.getContainer(id)
   const stream = await container.logs({ stdout: true, stderr: true, tail, timestamps: true })

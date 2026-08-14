@@ -7,6 +7,7 @@ const nav = [
   { href: '/', label: '프로젝트', icon: '🚀' },
   { href: '/history', label: '배포 이력', icon: '🕐' },
   { href: '/dns', label: 'DNS', icon: '🌐' },
+  { href: '/monitor', label: '모니터링', icon: '📊' },
 ]
 
 const secondary = [
