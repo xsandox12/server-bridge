@@ -277,6 +277,13 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
     'git pull origin master && docker compose build claw-dashboard && docker compose up -d claw-dashboard',
     'xsandox12/claw-dashboard','master','claw-dashboard')
 
+// ── necrodance (박자 디펜스 게임) — 아직 미니PC 미배포, 도메인 미등록 ──
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service,description) VALUES (?,?,?,?,?,?,?,?,?)`)
+  .run('necrodance','necrodance (박자 디펜스 게임)','/home/xsandox/necrodance','/home/xsandox/necrodance/docker-compose.yml',
+    'git pull origin master && docker compose build necrodance && docker compose up -d necrodance',
+    'xsandox12/necrodance','master','necrodance',
+    '9칸 외길 리듬 디펜스 게임(Next.js 16 + better-sqlite3 랭킹). 로컬 개발 완료, 미니PC 미배포 — GitHub repo 생성과 포트 배정 후 배포 필요.')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
