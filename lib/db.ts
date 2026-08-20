@@ -286,15 +286,15 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('necrodance-test','necrodance','necrodance',`http://${h}:9950/`,9950,0,'test')
 
-// ── brainstormer (단어 마인드맵 퍼즐) ──
+// ── mindmaper (단어 마인드맵 퍼즐) ──
 // 외부 도메인이 아직 없어 test 도메인만 등록한다 → /services 의 '미배포' 탭에 남는다.
 db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service,description) VALUES (?,?,?,?,?,?,?,?,?)`)
-  .run('brainstormer','brainstormer (단어 마인드맵 퍼즐)','/home/xsandox/brainstormer','/home/xsandox/brainstormer/docker-compose.yml',
-    'git pull origin master && docker compose build brainstormer && docker compose up -d brainstormer',
-    'xsandox12/brainstormer','master','brainstormer',
+  .run('mindmaper','mindmaper (단어 마인드맵 퍼즐)','/home/xsandox/mindmaper','/home/xsandox/mindmaper/docker-compose.yml',
+    'git pull origin master && docker compose build mindmaper && docker compose up -d mindmaper',
+    'xsandox12/mindmaper','master','mindmaper',
     '매일 주어지는 두 단어를 word2vec 유사도 마인드맵으로 잇는 데일리 퍼즐. 국립국어사전·우리말샘 뜻풀이로 직접 학습한 임베딩을 쓰며, 서버 없이 정적 파일로 동작한다.')
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
-  .run('brainstormer-test','brainstormer','brainstormer',`http://${h}:9960/`,9960,0,'test')
+  .run('mindmaper-test','mindmaper','mindmaper',`http://${h}:9960/`,9960,0,'test')
 
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
