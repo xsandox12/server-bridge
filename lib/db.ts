@@ -296,6 +296,16 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('mindmaper-test','mindmaper','mindmaper',`http://${h}:9960/`,9960,0,'test')
 
+// ── gov (정부지원 공고 통합 대시보드) ──
+// 외부 도메인이 아직 없어 test 도메인만 등록한다 → /services 의 '미배포' 탭에 남는다.
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service,description) VALUES (?,?,?,?,?,?,?,?,?)`)
+  .run('gov','gov (정부지원 공고 대시보드)','/home/xsandox/gov','/home/xsandox/gov/docker-compose.yml',
+    'git pull origin master && docker compose build gov && docker compose up -d gov',
+    'xsandox12/gov','master','gov',
+    '기업마당·K-Startup·온통청년의 정부지원 공고를 한 곳에 모아 보는 대시보드. 등록한 키워드나 저장 조건에 맞는 새 공고가 뜨면 디스코드로 알리고, 각 공고를 요약용 프롬프트로 복사해 원문 링크와 함께 확인한다. 6시간마다 자동 수집한다.')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('gov-test','gov','gov',`http://${h}:9850/`,9850,0,'test')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
