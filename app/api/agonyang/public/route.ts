@@ -1,5 +1,5 @@
 import db from '@/lib/db'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 type Category = { id: string; name: string; cols: number; sort_order: number }
 type Banner = {
@@ -17,8 +17,12 @@ type Banner = {
   sort_order: number
 }
 
-export async function GET() {
-  const categories = db.prepare('SELECT id, name, cols, sort_order FROM agonyang_categories ORDER BY sort_order').all() as Category[]
+export async function GET(req: NextRequest) {
+  // agonyang.com 은 site 파라미터 없이 부르므로 기본값은 'main'.
+  // game.agonyang.com 은 nginx 가 ?site=game 을 붙여 프록시한다.
+  const site = req.nextUrl.searchParams.get('site') || 'main'
+
+  const categories = db.prepare('SELECT id, name, cols, sort_order FROM agonyang_categories WHERE site = ? ORDER BY sort_order').all(site) as Category[]
   const banners = db.prepare('SELECT id, category_id, title, description, image_url, link_url, icon, accent_color, meta, is_live, open_in_new_tab, sort_order FROM agonyang_banners WHERE is_active = 1 ORDER BY sort_order').all() as Banner[]
 
   const result = categories

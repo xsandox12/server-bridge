@@ -45,7 +45,15 @@ const EMPTY_FORM: BannerFormState = {
 const card: React.CSSProperties = { background: 'var(--card)', border: '1px solid var(--card-border)' }
 const input: React.CSSProperties = { background: 'var(--card)', border: '1px solid var(--card-border)' }
 
+// 두 사이트가 카테고리 테이블을 site 컬럼으로 나눠 쓴다. 화면도 탭 하나로 공유한다.
+type Site = 'main' | 'game'
+const SITES: { id: Site; label: string; host: string; desc: string }[] = [
+  { id: 'main', label: '아고냥 메인', host: 'agonyang.com', desc: 'agonyang.com에 노출되는 카테고리와 배너를 관리합니다.' },
+  { id: 'game', label: '게임 허브', host: 'game.agonyang.com', desc: 'game.agonyang.com에 노출되는 게임 카드를 관리합니다. 링크는 /mindmaper/ 처럼 상대 경로로 적습니다.' },
+]
+
 export default function AgonyangPage() {
+  const [site, setSite] = useState<Site>('main')
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -60,7 +68,7 @@ export default function AgonyangPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/agonyang/categories')
+      const res = await fetch(`/api/agonyang/categories?site=${site}`)
       if (!res.ok) throw new Error('불러오기 실패')
       setCategories(await res.json())
       setError('')
@@ -69,7 +77,7 @@ export default function AgonyangPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [site])
 
   useEffect(() => { load() }, [load])
 
@@ -78,7 +86,7 @@ export default function AgonyangPage() {
     await fetch('/api/agonyang/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newCategoryName.trim() }),
+      body: JSON.stringify({ name: newCategoryName.trim(), site }),
     })
     setNewCategoryName('')
     load()
@@ -236,8 +244,23 @@ export default function AgonyangPage() {
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-bold">아고냥 메인 페이지</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>agonyang.com에 노출되는 카테고리와 배너를 관리합니다.</p>
+        <h1 className="text-2xl font-bold">아고냥 페이지</h1>
+        <div className="flex gap-2 mt-3">
+          {SITES.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setSite(s.id)}
+              className="px-3 py-1.5 rounded text-sm"
+              style={site === s.id
+                ? { background: 'var(--accent, #4da6ff)', color: '#fff' }
+                : { ...card, color: 'var(--muted)' }}
+            >
+              {s.label}
+              <span className="ml-2 opacity-60 text-xs">{s.host}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-sm mt-3" style={{ color: 'var(--muted)' }}>{SITES.find((s) => s.id === site)!.desc}</p>
       </div>
 
       <div className="flex flex-col gap-6">

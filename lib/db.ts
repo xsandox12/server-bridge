@@ -65,6 +65,8 @@ db.exec(`
     name TEXT NOT NULL,
     cols INTEGER NOT NULL DEFAULT 2,
     sort_order INTEGER NOT NULL DEFAULT 0,
+    -- 어느 사이트에 노출되는 카테고리인지. 'main' = agonyang.com, 'game' = game.agonyang.com
+    site TEXT NOT NULL DEFAULT 'main',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -107,6 +109,9 @@ for (const sql of [
   `ALTER TABLE projects ADD COLUMN sort_order INTEGER`,
   `ALTER TABLE projects ADD COLUMN group_name TEXT`,
   `ALTER TABLE deploy_logs ADD COLUMN notes TEXT`,
+  // agonyang.com 과 game.agonyang.com 이 카테고리 테이블을 공유한다. 기존 행은 전부 'main'.
+  // 배너는 category_id 로 따라가므로 별도 컬럼을 두지 않는다.
+  `ALTER TABLE agonyang_categories ADD COLUMN site TEXT NOT NULL DEFAULT 'main'`,
 ]) {
   try { db.exec(sql) } catch { /* 이미 존재 */ }
 }
@@ -330,5 +335,38 @@ if (agonyangCatCount.cnt === 0) {
     '/chzzk-dashboard/dashboard_icon_32.png', '/chzzk-dashboard/',
     '대', '#4ddb8f', null, 0, 0, 1, 1)
 }
+
+// ── game.agonyang.com 게임 허브 카테고리/배너 ──
+// agonyang.com 과 같은 테이블을 site 컬럼으로 나눠 쓴다. 관리 UI도 /agonyang 하나를 공유한다.
+db.prepare(`INSERT OR IGNORE INTO agonyang_categories (id, name, cols, sort_order, site) VALUES (?, ?, ?, ?, ?)`)
+  .run('game-play', '지금 바로 플레이', 2, 0, 'game')
+
+const insertGameBanner = db.prepare(`INSERT OR IGNORE INTO agonyang_banners
+  (id, category_id, title, description, image_url, link_url, icon, accent_color, meta, is_live, open_in_new_tab, is_active, sort_order)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+
+insertGameBanner.run('game-mindmaper', 'game-play', '마인드매퍼', '매일 주어지는 두 단어를 유사도 마인드맵으로 잇는 데일리 퍼즐. 하루 한 판.',
+  null, '/mindmaper/', '🧠', '#4d9dff', '데일리 퍼즐', 0, 0, 1, 0)
+
+insertGameBanner.run('game-hex21', 'game-play', 'Hex21', '벌집 모양 카드 블록을 드래그로 이어 합이 21이 되면 파괴하는 아케이드 퍼즐.',
+  null, '/hex21/', '🎴', '#ffc44d', '싱글 아케이드', 0, 0, 1, 1)
+
+insertGameBanner.run('game-necrodance', 'game-play', '네크로댄스', '박자에 맞춰 조작하는 리듬 디펜스 게임.',
+  null, '/necrodance', '💀', '#c77dff', '리듬 액션', 0, 0, 1, 2)
+
+// 버블타자는 계정·레이팅이 붙은 실서비스라 주소를 옮기지 않는다.
+// game.agonyang.com/bubbletaja 는 nginx 301 로 기존 도메인에 넘긴다.
+insertGameBanner.run('game-bubbletaja', 'game-play', '버블타자', '한글 단어를 입력해 음절 버블을 터뜨리고 상대를 압박하는 실시간 1:1 타자 대전.',
+  null, '/bubbletaja', '🫧', '#4ddb8f', '1:1 대전', 0, 0, 1, 3)
+
+// ── game.agonyang.com 도메인 (main-nginx 가 서빙하므로 agonyang 프로젝트에 붙인다) ──
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('agonyang-game', 'agonyang', 'game.agonyang.com', 'https://game.agonyang.com/', null, 1, 'production')
+
+// 각 게임의 공개 주소. 기존 test(포트 직접 접속) 행은 그대로 두고 production 행만 추가한다.
+const insertGameDomain = db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+insertGameDomain.run('mindmaper-prod', 'mindmaper', 'game.agonyang.com/mindmaper', 'https://game.agonyang.com/mindmaper/', null, 1, 'production')
+insertGameDomain.run('hex21-prod', 'hex21', 'game.agonyang.com/hex21', 'https://game.agonyang.com/hex21/', null, 1, 'production')
+insertGameDomain.run('necrodance-prod', 'necrodance', 'game.agonyang.com/necrodance', 'https://game.agonyang.com/necrodance/', null, 1, 'production')
 
 export default db
