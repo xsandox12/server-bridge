@@ -12,6 +12,15 @@ const recent = db.prepare('SELECT created_at FROM scores WHERE created_at >= ?')
 console.log(JSON.stringify({ agg, top, recent }));
 `
 
+const ADV_VISITS_SCRIPT = `
+const { createClient } = require('@libsql/client');
+const db = createClient({ url: 'file:/data/db.sqlite' });
+db.execute({
+  sql: "SELECT substr(pv.viewed_at,1,10) AS day, COUNT(*) AS n FROM page_views pv JOIN sites s ON s.id = pv.site_id WHERE s.slug = ? AND pv.viewed_at >= datetime('now','-7 days') GROUP BY day ORDER BY day",
+  args: ['necrodance'],
+}).then((r) => { console.log(JSON.stringify(r.rows)); }).catch((e) => { console.log(JSON.stringify({ error: String(e) })); });
+`
+
 const KST_DAY = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Asia/Seoul',
   year: 'numeric',
@@ -27,16 +36,17 @@ function recentDays(days: number): string[] {
 }
 
 export async function GET() {
-  let raw: string
-  try {
-    const { stdout, stderr } = await execInContainer('necrodance', ['node', '-e', STATS_SCRIPT])
-    raw = stdout.trim()
-    if (!raw) return NextResponse.json({ error: stderr || 'no output' }, { status: 500 })
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+  const [statsResult, advResult] = await Promise.allSettled([
+    execInContainer('necrodance', ['node', '-e', STATS_SCRIPT]),
+    execInContainer('adv-admin', ['node', '-e', ADV_VISITS_SCRIPT]),
+  ])
+
+  if (statsResult.status === 'rejected' || !statsResult.value.stdout.trim()) {
+    const reason = statsResult.status === 'rejected' ? String(statsResult.reason) : statsResult.value.stderr
+    return NextResponse.json({ error: reason || 'no output' }, { status: 500 })
   }
 
-  const parsed = JSON.parse(raw) as {
+  const parsed = JSON.parse(statsResult.value.stdout.trim()) as {
     agg: {
       total: number
       players: number
@@ -65,6 +75,15 @@ export async function GET() {
   const dailyPlays = days.map((day) => ({ day, n: counts.get(day) ?? 0 }))
   const today = days[days.length - 1]
 
+  let dailyVisits: { day: string; n: number }[] = []
+  if (advResult.status === 'fulfilled' && advResult.value.stdout.trim()) {
+    try {
+      dailyVisits = JSON.parse(advResult.value.stdout.trim())
+    } catch {
+      // adv-admin 미연동/일시 오류 시 방문자 추이 없이 나머지 통계만 표시
+    }
+  }
+
   return NextResponse.json({
     runs: {
       total: parsed.agg.total,
@@ -76,6 +95,7 @@ export async function GET() {
       avgSurvivalMs: Math.round(parsed.agg.avgSurvivalMs ?? 0),
     },
     dailyPlays,
+    dailyVisits,
     top: parsed.top,
   })
 }

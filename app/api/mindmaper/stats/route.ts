@@ -1,9 +1,19 @@
-import { getContainerLogs } from '@/lib/docker'
+import { execInContainer, getContainerLogs } from '@/lib/docker'
 import { NextRequest, NextResponse } from 'next/server'
 
-// mindmaper 는 정적 nginx 라 DB 가 없고 adv-admin 방문추적도 안 붙어 있다.
-// 유일한 데이터 소스가 컨테이너 access log(= docker logs) 라서 그걸 파싱한다.
-// 로그는 컨테이너 재시작/로테이션 이후분만 남으므로 보존 범위(coveredFrom)를 함께 돌려준다.
+// mindmaper 는 정적 nginx 라 자체 DB 가 없다. 두 소스를 합쳐서 돌려준다.
+//  1) adv-admin page_views — 브라우저 비콘 기반 누적 방문 집계(주 지표).
+//  2) 컨테이너 access log — 요청 단위 원본. JS 를 안 켠 접속까지 잡히지만
+//     컨테이너 재시작/로테이션 이후분만 남으므로 보존 범위(coveredFrom)를 함께 돌려준다.
+const ADV_VISITS_SCRIPT = `
+const { createClient } = require('@libsql/client');
+const db = createClient({ url: 'file:/data/db.sqlite' });
+db.execute({
+  sql: "SELECT substr(pv.viewed_at,1,10) AS day, COUNT(*) AS n FROM page_views pv JOIN sites s ON s.id = pv.site_id WHERE s.slug = ? AND pv.viewed_at >= datetime('now','-7 days') GROUP BY day ORDER BY day",
+  args: ['mindmaper'],
+}).then((r) => { console.log(JSON.stringify(r.rows)); }).catch((e) => { console.log(JSON.stringify({ error: String(e) })); });
+`
+
 const ACCESS_LINE =
   /(\d{1,3}(?:\.\d{1,3}){3}) - \S+ \[(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2}) ([+-]\d{2})(\d{2})\] "(\w+) ([^ "]+)[^"]*" (\d{3})/g
 
@@ -29,11 +39,23 @@ function isPageView(method: string, path: string): boolean {
 export async function GET(req: NextRequest) {
   const tail = Number(new URL(req.url).searchParams.get('tail') ?? 20000)
 
-  let logs: string
-  try {
-    logs = await getContainerLogs('mindmaper', tail)
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+  const [logsResult, advResult] = await Promise.allSettled([
+    getContainerLogs('mindmaper', tail),
+    execInContainer('adv-admin', ['node', '-e', ADV_VISITS_SCRIPT]),
+  ])
+
+  if (logsResult.status === 'rejected') {
+    return NextResponse.json({ error: String(logsResult.reason) }, { status: 500 })
+  }
+  const logs = logsResult.value
+
+  let dailyVisits: { day: string; n: number }[] = []
+  if (advResult.status === 'fulfilled' && advResult.value.stdout.trim()) {
+    try {
+      dailyVisits = JSON.parse(advResult.value.stdout.trim())
+    } catch {
+      // adv-admin 미연동/일시 오류 시 방문자 추이 없이 access log 집계만 표시
+    }
   }
 
   const perDay = new Map<string, { views: number; requests: number; ips: Set<string> }>()
@@ -77,6 +99,7 @@ export async function GET(req: NextRequest) {
   const today = KST_DAY.format(new Date())
 
   return NextResponse.json({
+    dailyVisits,
     source: 'nginx access log (docker logs)',
     coveredFrom: earliest === null ? null : new Date(earliest).toISOString(),
     tail,

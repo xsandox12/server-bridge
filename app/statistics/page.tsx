@@ -107,6 +107,22 @@ function DailyTable({ rows, columns }: { rows: Record<string, string | number>[]
   )
 }
 
+/** 네 프로젝트 모두 adv-admin 비콘으로 방문을 집계하므로 표 하나를 공유한다. */
+function AdvVisitsSection({ rows }: { rows: { day: string; n: number }[] }) {
+  return (
+    <Section title="adv-admin 방문자 추이 (최근 7일)">
+      {rows.length === 0 ? (
+        <p style={{ color: 'var(--muted)' }}>(집계된 방문 없음)</p>
+      ) : (
+        <DailyTable
+          rows={rows.map((v) => ({ day: v.day, n: v.n }))}
+          columns={[{ key: 'day', label: '날짜' }, { key: 'n', label: '방문 수' }]}
+        />
+      )}
+    </Section>
+  )
+}
+
 /** 각 프로젝트 패널이 공통으로 쓰는 로딩/에러/데이터 상태. */
 function useStats<T>(url: string) {
   const [data, setData] = useState<T | null>(null)
@@ -228,16 +244,7 @@ function BubbleChatStats() {
             )}
           </Section>
 
-          <Section title="adv-admin 방문자 추이 (최근 7일)">
-            {stats.dailyVisits.length === 0 ? (
-              <p style={{ color: 'var(--muted)' }}>(연동 정보 없음)</p>
-            ) : (
-              <DailyTable
-                rows={stats.dailyVisits.map((v) => ({ day: v.day, n: v.n }))}
-                columns={[{ key: 'day', label: '날짜' }, { key: 'n', label: '방문 수' }]}
-              />
-            )}
-          </Section>
+          <AdvVisitsSection rows={stats.dailyVisits} />
         </>
       )}
 
@@ -311,16 +318,7 @@ function Hex21Stats() {
             <StatCard label="최고 점수" value={stats.rounds.topScore} />
           </div>
 
-          <Section title="adv-admin 방문자 추이 (최근 7일)">
-            {stats.dailyVisits.length === 0 ? (
-              <p style={{ color: 'var(--muted)' }}>(연동 정보 없음)</p>
-            ) : (
-              <DailyTable
-                rows={stats.dailyVisits.map((v) => ({ day: v.day, n: v.n }))}
-                columns={[{ key: 'day', label: '날짜' }, { key: 'n', label: '방문 수' }]}
-              />
-            )}
-          </Section>
+          <AdvVisitsSection rows={stats.dailyVisits} />
         </>
       )}
     </div>
@@ -340,6 +338,7 @@ type NecrodanceStatsResponse = {
     avgSurvivalMs: number
   }
   dailyPlays: { day: string; n: number }[]
+  dailyVisits: { day: string; n: number }[]
   top: {
     nickname: string
     score: number
@@ -374,6 +373,8 @@ function NecrodanceStats() {
             <StatCard label="평균 점수" value={stats.runs.avgScore} />
             <StatCard label="평균 생존" value={`${Math.round(stats.runs.avgSurvivalMs / 1000)}초`} />
           </div>
+
+          <AdvVisitsSection rows={stats.dailyVisits} />
 
           <Section title="일별 기록 수 (최근 7일)">
             <DailyTable
@@ -415,6 +416,7 @@ function NecrodanceStats() {
 // ── 마인드매퍼 ──
 
 type MindmaperStatsResponse = {
+  dailyVisits: { day: string; n: number }[]
   source: string
   coveredFrom: string | null
   tail: number
@@ -432,9 +434,11 @@ function MindmaperStats() {
 
       {stats && (
         <>
+          <AdvVisitsSection rows={stats.dailyVisits} />
+
           <p className="text-xs" style={{ color: 'var(--muted)' }}>
-            정적 사이트라 DB가 없어 nginx 접속 로그({stats.source})를 집계합니다. 컨테이너 재시작 이후 로그만 남으므로
-            누적 수치가 아닙니다. 집계 범위:{' '}
+            아래는 nginx 접속 로그({stats.source}) 기준 원본 요청 집계입니다. JS를 안 켠 접속까지 잡히지만 컨테이너
+            재시작 이후 로그만 남아 누적 수치가 아닙니다 — 누적은 위 adv-admin 방문자 추이를 보세요. 집계 범위:{' '}
             {stats.coveredFrom ? new Date(stats.coveredFrom).toLocaleString('ko-KR') : '(로그 없음)'} 이후 최근{' '}
             {stats.tail.toLocaleString()}줄.
           </p>
