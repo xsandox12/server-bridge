@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-type MainTab = 'accounts' | 'stats'
+type MainTab = 'accounts'
 
 const card: React.CSSProperties = { background: 'var(--card)', border: '1px solid var(--card-border)' }
 
@@ -39,12 +39,10 @@ export default function Hex21Page() {
         <h1 className="text-2xl font-bold">Hex21</h1>
         <div className="flex gap-2">
           <MainTabButton active={tab === 'accounts'} label="계정 관리" onClick={() => setTab('accounts')} />
-          <MainTabButton active={tab === 'stats'} label="통계" onClick={() => setTab('stats')} />
         </div>
       </div>
 
       {tab === 'accounts' && <AccountsTab />}
-      {tab === 'stats' && <StatsTab />}
     </div>
   )
 }
@@ -248,103 +246,6 @@ function AccountsTab() {
           </div>
         )}
       </section>
-    </div>
-  )
-}
-
-type StatsResponse = {
-  users: { total: number; newToday: number; activeLast7d: number; activeLast30d: number }
-  rounds: { total: number; today: number; topScore: number }
-  dailyVisits: { day: string; n: number }[]
-}
-
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-xl p-4" style={card}>
-      <p className="text-xs" style={{ color: 'var(--muted)' }}>{label}</p>
-      <p className="text-2xl font-bold mt-1">{value}</p>
-    </div>
-  )
-}
-
-function StatsTab() {
-  const [stats, setStats] = useState<StatsResponse | null>(null)
-  const [statsError, setStatsError] = useState('')
-  const [statsLoading, setStatsLoading] = useState(true)
-
-  const fetchStats = async () => {
-    setStatsLoading(true)
-    setStatsError('')
-    try {
-      const res = await fetch('/api/hex21/stats')
-      const data = await res.json()
-      if (data.error) setStatsError(data.error)
-      else setStats(data)
-    } catch (err) {
-      setStatsError(String(err))
-    }
-    setStatsLoading(false)
-  }
-
-  useEffect(() => {
-    fetchStats()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">현황</h2>
-        <button
-          onClick={fetchStats}
-          className="text-sm px-4 py-2 rounded-lg"
-          style={{ background: 'var(--background)', border: '1px solid var(--card-border)' }}
-        >
-          새로고침
-        </button>
-      </div>
-
-      {statsLoading ? (
-        <p style={{ color: 'var(--muted)' }}>로딩 중…</p>
-      ) : statsError ? (
-        <p style={{ color: '#f87171' }}>{statsError}</p>
-      ) : stats ? (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard label="총 가입자" value={stats.users.total} />
-            <StatCard label="오늘 신규가입" value={stats.users.newToday} />
-            <StatCard label="최근 7일 로그인" value={stats.users.activeLast7d} />
-            <StatCard label="최근 30일 로그인" value={stats.users.activeLast30d} />
-            <StatCard label="총 라운드 수" value={stats.rounds.total} />
-            <StatCard label="오늘 라운드 수" value={stats.rounds.today} />
-            <StatCard label="최고 점수" value={stats.rounds.topScore} />
-          </div>
-
-          <section className="rounded-xl p-5" style={card}>
-            <h3 className="text-base font-semibold mb-3">adv-admin 방문자 추이 (최근 7일)</h3>
-            {stats.dailyVisits.length === 0 ? (
-              <p style={{ color: 'var(--muted)' }}>(연동 정보 없음)</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ color: 'var(--muted)' }} className="text-left">
-                    <th className="pb-2 font-normal">날짜</th>
-                    <th className="pb-2 font-normal">방문 수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.dailyVisits.map((v) => (
-                    <tr key={v.day} style={{ borderTop: '1px solid var(--card-border)' }}>
-                      <td className="py-2">{v.day}</td>
-                      <td className="py-2">{v.n}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        </>
-      ) : null}
     </div>
   )
 }

@@ -6,7 +6,7 @@ import BubbleChatVersions from '@/components/BubbleChatVersions'
 type WordEntry = { word: string; count: number; lastAt: string }
 type AddStatus = 'adding' | 'added' | 'exists' | 'error'
 type Lang = 'kr' | 'en'
-type MainTab = 'dict' | 'accounts' | 'stats' | 'deploy'
+type MainTab = 'dict' | 'accounts' | 'deploy'
 
 const card: React.CSSProperties = { background: 'var(--card)', border: '1px solid var(--card-border)' }
 
@@ -44,14 +44,12 @@ export default function BubbleChatPage() {
         <div className="flex gap-2">
           <MainTabButton active={tab === 'dict'} label="사전 관리" onClick={() => setTab('dict')} />
           <MainTabButton active={tab === 'accounts'} label="계정 관리" onClick={() => setTab('accounts')} />
-          <MainTabButton active={tab === 'stats'} label="통계" onClick={() => setTab('stats')} />
           <MainTabButton active={tab === 'deploy'} label="배포" onClick={() => setTab('deploy')} />
         </div>
       </div>
 
       {tab === 'dict' && <DictionaryTab />}
       {tab === 'accounts' && <AccountsTab />}
-      {tab === 'stats' && <StatsTab />}
       {tab === 'deploy' && <DeployTab />}
     </div>
   )
@@ -547,199 +545,6 @@ function AccountsTab() {
               </tbody>
             </table>
           </div>
-        )}
-      </section>
-    </div>
-  )
-}
-
-type StatsResponse = {
-  users: { total: number; newToday: number; activeLast7d: number; activeLast30d: number }
-  games: { total: number; today: number; byMode: { modeId: string; n: number }[] }
-  live: { onlineCount: number; activeRooms: number }
-  dailyVisits: { day: string; n: number }[]
-}
-
-type GameHistoryEntry = {
-  id: number
-  roomCode: string
-  modeId: string
-  ranked: boolean
-  durationMs: number
-  players: { userId: number | null; nickname: string; score: number; rank: number; survivalMs?: number }[]
-  playedAt: number
-}
-
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-xl p-4" style={card}>
-      <p className="text-xs" style={{ color: 'var(--muted)' }}>{label}</p>
-      <p className="text-2xl font-bold mt-1">{value}</p>
-    </div>
-  )
-}
-
-function StatsTab() {
-  const [stats, setStats] = useState<StatsResponse | null>(null)
-  const [statsError, setStatsError] = useState('')
-  const [statsLoading, setStatsLoading] = useState(true)
-
-  const [history, setHistory] = useState<GameHistoryEntry[]>([])
-  const [historyTotal, setHistoryTotal] = useState(0)
-  const [historyOffset, setHistoryOffset] = useState(0)
-  const [historyLoading, setHistoryLoading] = useState(true)
-  const HISTORY_PAGE = 20
-
-  const fetchStats = async () => {
-    setStatsLoading(true)
-    setStatsError('')
-    try {
-      const res = await fetch('/api/bubblechat/stats')
-      const data = await res.json()
-      if (data.error) setStatsError(data.error)
-      else setStats(data)
-    } catch (err) {
-      setStatsError(String(err))
-    }
-    setStatsLoading(false)
-  }
-
-  const fetchHistory = async (offset: number, append: boolean) => {
-    setHistoryLoading(true)
-    try {
-      const res = await fetch(`/api/bubblechat/game-history?limit=${HISTORY_PAGE}&offset=${offset}`)
-      const data = await res.json()
-      setHistoryTotal(data.total ?? 0)
-      setHistory((prev) => (append ? [...prev, ...(data.games ?? [])] : data.games ?? []))
-    } catch {
-      // 목록만 비어있게 두고 조용히 무시
-    }
-    setHistoryLoading(false)
-  }
-
-  useEffect(() => {
-    fetchStats()
-    fetchHistory(0, false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const loadMoreHistory = () => {
-    const next = historyOffset + HISTORY_PAGE
-    setHistoryOffset(next)
-    fetchHistory(next, true)
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">현황</h2>
-        <button
-          onClick={fetchStats}
-          className="text-sm px-4 py-2 rounded-lg"
-          style={{ background: 'var(--background)', border: '1px solid var(--card-border)' }}
-        >
-          새로고침
-        </button>
-      </div>
-
-      {statsLoading ? (
-        <p style={{ color: 'var(--muted)' }}>로딩 중…</p>
-      ) : statsError ? (
-        <p style={{ color: '#f87171' }}>{statsError}</p>
-      ) : stats ? (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard label="총 가입자" value={stats.users.total} />
-            <StatCard label="오늘 신규가입" value={stats.users.newToday} />
-            <StatCard label="최근 7일 로그인" value={stats.users.activeLast7d} />
-            <StatCard label="현재 접속자" value={stats.live.onlineCount} />
-            <StatCard label="진행중인 방" value={stats.live.activeRooms} />
-            <StatCard label="총 게임 수" value={stats.games.total} />
-            <StatCard label="오늘 게임 수" value={stats.games.today} />
-          </div>
-
-          <section className="rounded-xl p-5" style={card}>
-            <h3 className="text-base font-semibold mb-3">모드별 게임 수</h3>
-            {stats.games.byMode.length === 0 ? (
-              <p style={{ color: 'var(--muted)' }}>(기록 없음)</p>
-            ) : (
-              <div className="flex gap-3 flex-wrap">
-                {stats.games.byMode.map((m) => (
-                  <div
-                    key={m.modeId}
-                    className="text-sm px-3 py-1.5 rounded-lg"
-                    style={{ background: 'var(--background)', border: '1px solid var(--card-border)' }}
-                  >
-                    {m.modeId}: {m.n}회
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          <section className="rounded-xl p-5" style={card}>
-            <h3 className="text-base font-semibold mb-3">adv-admin 방문자 추이 (최근 7일)</h3>
-            {stats.dailyVisits.length === 0 ? (
-              <p style={{ color: 'var(--muted)' }}>(연동 정보 없음)</p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ color: 'var(--muted)' }} className="text-left">
-                    <th className="pb-2 font-normal">날짜</th>
-                    <th className="pb-2 font-normal">방문 수</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.dailyVisits.map((v) => (
-                    <tr key={v.day} style={{ borderTop: '1px solid var(--card-border)' }}>
-                      <td className="py-2">{v.day}</td>
-                      <td className="py-2">{v.n}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
-        </>
-      ) : null}
-
-      <section className="rounded-xl p-5" style={card}>
-        <h3 className="text-base font-semibold mb-3">최근 매치 ({historyTotal}건)</h3>
-        {history.length === 0 && !historyLoading ? (
-          <p style={{ color: 'var(--muted)' }}>(기록 없음)</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {history.map((g) => (
-              <div key={g.id} className="rounded-lg p-3 text-sm" style={{ background: 'var(--background)', border: '1px solid var(--card-border)' }}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span style={{ color: 'var(--muted)' }}>
-                    {new Date(g.playedAt).toLocaleString('ko-KR')} · 방 {g.roomCode} · {g.modeId}
-                    {g.ranked ? ' · 랭크' : ''} · {Math.round(g.durationMs / 1000)}초
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {g.players
-                    .slice()
-                    .sort((a, b) => a.rank - b.rank)
-                    .map((p, i) => (
-                      <span key={i} className="px-2 py-0.5 rounded-md text-xs" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
-                        {p.rank}위 {p.nickname} ({p.score}점)
-                      </span>
-                    ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {history.length < historyTotal && (
-          <button
-            onClick={loadMoreHistory}
-            disabled={historyLoading}
-            className="mt-3 text-sm px-4 py-2 rounded-lg"
-            style={{ background: 'var(--background)', border: '1px solid var(--card-border)' }}
-          >
-            더 보기
-          </button>
         )}
       </section>
     </div>
