@@ -311,6 +311,19 @@ db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd
 db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
   .run('gov-test','gov','gov',`http://${h}:9850/`,9850,0,'test')
 
+// ── work1 (HVAC 통합 컨트롤러) ──
+// 공개 주소 work1.agonyang.com 은 이미 살아 있지만, 요청에 따라 test 도메인만 등록해
+// /services 의 '미배포' 탭에 남긴다. 배포중으로 올리려면 아래 production 행 주석을 푼다.
+// 배포는 볼륨 마운트(nginx:alpine)라 git pull 만으로 반영된다 → drawingtool 과 같이 deploy_cmd 없음.
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service,description) VALUES (?,?,?,?,?,?,?,?,?)`)
+  .run('work1','work1 (HVAC 통합 컨트롤러)','/home/xsandox/hvac-controller','/home/xsandox/hvac-controller/docker-compose.yml',
+    null,'xsandox12/hvac-controller','master','hvac-sim',
+    '저온저장고(FOX-2003 호환)와 스마트팜 공조를 템플릿만 바꿔 쓰는 컨트롤러. 제어 코어는 순수 C++17 이고 네이티브 테스트·웹 시뮬레이터·ESP32 펌웨어가 같은 코드를 쓴다. 웹에는 템플릿을 골라 돌리는 통합 시뮬레이터와, 단자를 클릭해 배선하고 전원을 넣는 Wokwi 형태의 배선 에뮬레이터를 올린다.')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('work1-test','work1','work1',`http://${h}:9200/`,9200,0,'test')
+// db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+//   .run('work1-prod','work1','work1.agonyang.com','https://work1.agonyang.com/',null,1,'production')
+
 // ── agonyang 메인 페이지 카테고리/배너 (프로젝트 네비게이터 목업 기반) ──
 const agonyangCatCount = db.prepare('SELECT COUNT(*) as cnt FROM agonyang_categories').get() as { cnt: number }
 if (agonyangCatCount.cnt === 0) {
