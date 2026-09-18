@@ -14,11 +14,20 @@ interface Project {
   docker_service: string | null
   description: string | null
   group_name: string | null
+  status: string | null
 }
 
 interface Domain { id: string; project_id: string; label: string; url: string; env: string }
 
-type Tab = 'deployed' | 'undeployed'
+type Tab = 'in_progress' | 'paused' | 'completed' | 'archived'
+
+const TAB_LABEL: Record<Tab, string> = {
+  in_progress: '진행중',
+  paused: '정지',
+  completed: '완성',
+  archived: '폐기',
+}
+const TABS: Tab[] = ['in_progress', 'paused', 'completed', 'archived']
 
 export default function ProjectGrid({ projects, domains, initialTab }: { projects: Project[]; domains: Domain[]; initialTab: Tab }) {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab)
@@ -29,9 +38,8 @@ export default function ProjectGrid({ projects, domains, initialTab }: { project
   const draggedIdRef = useRef<string | null>(null)
   const dragOverIdRef = useRef<string | null>(null)
 
-  const deployed = order.filter((p) => domains.some((d) => d.project_id === p.id && d.env === 'production'))
-  const undeployed = order.filter((p) => !domains.some((d) => d.project_id === p.id && d.env === 'production'))
-  const visible = activeTab === 'deployed' ? deployed : undeployed
+  const byStatus = (tab: Tab) => order.filter((p) => (p.status ?? 'in_progress') === tab)
+  const visible = byStatus(activeTab)
   const selected = order.find((p) => p.id === selectedId) ?? null
   const existingGroups = [...new Set(order.map((p) => p.group_name).filter((g): g is string => !!g))]
 
@@ -152,7 +160,7 @@ export default function ProjectGrid({ projects, domains, initialTab }: { project
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold">{activeTab === 'deployed' ? '배포중' : '미배포'}</h1>
+        <h1 className="text-2xl font-bold">{TAB_LABEL[activeTab]}</h1>
         <p className="text-sm" style={{ color: 'var(--muted)' }}>GitHub → 미니PC → Docker → DNS</p>
       </div>
 
@@ -160,20 +168,16 @@ export default function ProjectGrid({ projects, domains, initialTab }: { project
         className="flex gap-1 mb-5 rounded-xl p-1 w-fit"
         style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}
       >
-        <button
-          onClick={() => setActiveTab('deployed')}
-          className="tab-btn text-sm font-medium px-4 py-1.5 rounded-lg"
-          style={{ background: activeTab === 'deployed' ? 'var(--accent)' : 'transparent', color: activeTab === 'deployed' ? '#fff' : 'var(--muted)' }}
-        >
-          배포중 ({deployed.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('undeployed')}
-          className="tab-btn text-sm font-medium px-4 py-1.5 rounded-lg"
-          style={{ background: activeTab === 'undeployed' ? 'var(--accent)' : 'transparent', color: activeTab === 'undeployed' ? '#fff' : 'var(--muted)' }}
-        >
-          미배포 ({undeployed.length})
-        </button>
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className="tab-btn text-sm font-medium px-4 py-1.5 rounded-lg"
+            style={{ background: activeTab === tab ? 'var(--accent)' : 'transparent', color: activeTab === tab ? '#fff' : 'var(--muted)' }}
+          >
+            {TAB_LABEL[tab]} ({byStatus(tab).length})
+          </button>
+        ))}
       </div>
 
       {visible.length === 0 ? (

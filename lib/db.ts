@@ -108,6 +108,7 @@ for (const sql of [
   `ALTER TABLE projects ADD COLUMN description TEXT`,
   `ALTER TABLE projects ADD COLUMN sort_order INTEGER`,
   `ALTER TABLE projects ADD COLUMN group_name TEXT`,
+  `ALTER TABLE projects ADD COLUMN status TEXT`,
   `ALTER TABLE deploy_logs ADD COLUMN notes TEXT`,
   // agonyang.com 과 game.agonyang.com 이 카테고리 테이블을 공유한다. 기존 행은 전부 'main'.
   // 배너는 category_id 로 따라가므로 별도 컬럼을 두지 않는다.
@@ -381,5 +382,52 @@ const insertGameDomain = db.prepare(`INSERT OR IGNORE INTO domains (id,project_i
 insertGameDomain.run('mindmaper-prod', 'mindmaper', 'game.agonyang.com/mindmaper', 'https://game.agonyang.com/mindmaper/', null, 1, 'production')
 insertGameDomain.run('hex21-prod', 'hex21', 'game.agonyang.com/hex21', 'https://game.agonyang.com/hex21/', null, 1, 'production')
 insertGameDomain.run('necrodance-prod', 'necrodance', 'game.agonyang.com/necrodance', 'https://game.agonyang.com/necrodance/', null, 1, 'production')
+
+
+// ── hannamtech-web (건설 시공 실적 웹사이트) ──
+// 미니PC에 컨테이너(hannamtech, 9310)가 이미 떠 있었지만 projects 테이블에 등록이 누락되어 있었다.
+db.prepare(`INSERT OR IGNORE INTO projects (id,name,path,compose_file,deploy_cmd,git_repo,git_branch,docker_service) VALUES (?,?,?,?,?,?,?,?)`)
+  .run('hannamtech-web','hannamtech-web (건설 시공 실적 웹사이트)','/home/xsandox/hannamtech-web','/home/xsandox/hannamtech-web/docker-compose.yml',
+    'git pull origin main && docker compose build hannamtech-web && docker compose up -d hannamtech-web',
+    'xsandox12/hannamtech-web','main','hannamtech')
+db.prepare(`INSERT OR IGNORE INTO domains (id,project_id,label,url,port,is_external,env) VALUES (?,?,?,?,?,?,?)`)
+  .run('hannamtech-web-test','hannamtech-web','hannamtech-web',`http://${h}:9310/`,9310,0,'test')
+
+// ── 로컬 전용 프로젝트 (D:\dev, 미니PC 미배포) ──
+// 미니PC에 배포되지 않고 로컬에서만 진행 중인 프로젝트들. compose_file/deploy_cmd/docker_service가
+// null이면 파일 탐색·배포 기능은 동작하지 않지만(로컬 Windows 경로라 미니PC 컨테이너 안에서 찾을 수
+// 없음), 프로젝트 메뉴에서 상태(진행중/정지/완성/폐기)를 함께 보기 위해 등록한다.
+const localOnly: [string, string, string][] = [
+  ['fidgetjelly', 'fidgetJelly', 'D:/dev/fidgetJelly'],
+  ['balancetower', 'balancetower', 'D:/dev/balancetower'],
+  ['tagplorer', 'Tagplorer', 'D:/dev/Tagplorer'],
+  ['aethelglass', 'Aethelglass', 'D:/dev/Aethelglass'],
+  ['simplecad', 'simpleCad', 'D:/dev/simpleCad'],
+  ['orlack', 'orlack', 'D:/dev/orlack'],
+  ['storyforge', 'storyforge', 'D:/dev/storyforge'],
+  ['muvideomaker', 'muvideomaker', 'D:/dev/muvideomaker'],
+  ['game', 'game (게임 허브 목업)', 'D:/dev/game'],
+  ['legacy', 'legacy (레거시)', 'D:/dev/legacy'],
+]
+const insertLocalOnly = db.prepare(`INSERT OR IGNORE INTO projects (id,name,path) VALUES (?,?,?)`)
+for (const [id, name, path] of localOnly) insertLocalOnly.run(id, name, path)
+
+// ── 프로젝트 상태(진행중/정지/완성/폐기) 초기 분류 ──
+// 최초 1회만 채운다. 사용자가 UI(/ 홈의 카드 상세)에서 상태를 바꾸면 이후 재시작/재배포에도
+// 절대 덮어쓰지 않는다 (status가 NULL일 때만 UPDATE).
+const initialStatus: Record<string, string> = {
+  adv: 'completed', agonyang: 'in_progress', 'chzzk-analyze': 'completed',
+  'chzzk-dashboard': 'completed', coldstorage: 'paused', drawingtool: 'completed',
+  bubblechat: 'completed', 'bubblechat-en': 'completed', 'bubblechat-test': 'archived',
+  hex21: 'completed', fishgame: 'paused', smartorder: 'completed', openmarket: 'paused',
+  'stock-dashboard': 'in_progress', 'claw-dashboard': 'paused', necrodance: 'in_progress',
+  mindmaper: 'in_progress', gov: 'in_progress', work1: 'in_progress', ostvideo: 'in_progress',
+  'hannamtech-web': 'in_progress',
+  fidgetjelly: 'in_progress', balancetower: 'in_progress', tagplorer: 'in_progress',
+  aethelglass: 'in_progress', simplecad: 'in_progress', orlack: 'in_progress',
+  storyforge: 'archived', muvideomaker: 'paused', game: 'paused', legacy: 'archived',
+}
+const setInitialStatus = db.prepare(`UPDATE projects SET status = ? WHERE id = ? AND status IS NULL`)
+for (const [id, status] of Object.entries(initialStatus)) setInitialStatus.run(status, id)
 
 export default db

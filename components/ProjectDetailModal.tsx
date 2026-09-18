@@ -12,10 +12,18 @@ interface Project {
   docker_service: string | null
   description: string | null
   group_name: string | null
+  status: string | null
 }
 
 interface Domain { id: string; label: string; url: string; env: string }
 interface Container { id: string; name: string; status: string; state: string }
+
+const STATUS_OPTIONS: { value: string; label: string }[] = [
+  { value: 'in_progress', label: '진행중' },
+  { value: 'paused', label: '정지' },
+  { value: 'completed', label: '완성' },
+  { value: 'archived', label: '폐기' },
+]
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -59,6 +67,16 @@ export default function ProjectDetailModal({ project, domains, existingGroups, o
     onUpdate({ description })
   }
 
+  const saveStatus = async (next: string) => {
+    if (next === (project.status ?? '')) return
+    await fetch(`/api/projects/${project.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: next }),
+    })
+    onUpdate({ status: next })
+  }
+
   const saveGroup = async () => {
     setEditingGroup(false)
     const next = groupName.trim()
@@ -97,6 +115,19 @@ export default function ProjectDetailModal({ project, domains, existingGroups, o
 
         <Row label="경로">
           <p className="text-sm font-mono">{project.path}</p>
+        </Row>
+
+        <Row label="상태">
+          <select
+            value={project.status ?? 'in_progress'}
+            onChange={(e) => saveStatus(e.target.value)}
+            className="text-sm w-fit rounded-md p-2"
+            style={{ background: '#0f172a', border: '1px solid var(--card-border)', color: 'var(--foreground)' }}
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </Row>
 
         <Row label="그룹">

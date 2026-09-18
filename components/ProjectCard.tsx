@@ -12,11 +12,19 @@ interface Project {
   docker_service: string | null
   description: string | null
   group_name: string | null
+  status: string | null
 }
 
 interface Domain { id: string; label: string; url: string; env: string }
 
 interface Container { id: string; name: string; status: string; state: string }
+
+const PROJECT_STATUS_LABEL: Record<string, string> = {
+  in_progress: '진행중',
+  paused: '정지',
+  completed: '완성',
+  archived: '폐기',
+}
 
 export default function ProjectCard({
   project,
@@ -112,12 +120,22 @@ export default function ProjectCard({
           />
           <h3 className="text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{project.name}</h3>
         </div>
-        <span
-          className="flex-shrink-0 text-[10px] px-2 py-0.5 rounded-full"
-          style={{ background: statusBg, color: statusColor }}
-        >
-          {statusLabel}
-        </span>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {project.status && (
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full"
+              style={{ background: 'rgba(148,163,184,0.15)', color: '#94a3b8' }}
+            >
+              {PROJECT_STATUS_LABEL[project.status] ?? project.status}
+            </span>
+          )}
+          <span
+            className="text-[10px] px-2 py-0.5 rounded-full"
+            style={{ background: statusBg, color: statusColor }}
+          >
+            {statusLabel}
+          </span>
+        </div>
       </div>
 
       <p className="text-xs font-mono truncate" style={{ color: 'var(--muted)' }}>{project.path}</p>
