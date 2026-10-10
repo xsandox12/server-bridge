@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react'
 
 const card: React.CSSProperties = { background: 'var(--card)', border: '1px solid var(--card-border)' }
 
-type ProjectId = 'bubblechat' | 'hex21' | 'necrodance' | 'mindmaper'
+type ProjectId = 'bubblechat' | 'hex21' | 'necrodance' | 'mindmaper' | 'game-factory'
 
 const PROJECTS: { id: ProjectId; label: string; icon: string }[] = [
   { id: 'bubblechat', label: '버블타자', icon: '🫧' },
   { id: 'hex21', label: 'Hex21', icon: '🎴' },
   { id: 'necrodance', label: '네크로댄스', icon: '💀' },
   { id: 'mindmaper', label: '마인드매퍼', icon: '🧠' },
+  { id: 'game-factory', label: '게임 공장', icon: '🏭' },
 ]
 
 export default function StatisticsPage() {
@@ -42,6 +43,7 @@ export default function StatisticsPage() {
       {project === 'hex21' && <Hex21Stats />}
       {project === 'necrodance' && <NecrodanceStats />}
       {project === 'mindmaper' && <MindmaperStats />}
+      {project === 'game-factory' && <GameFactoryStats />}
     </div>
   )
 }
@@ -462,6 +464,288 @@ function MindmaperStats() {
               ]}
             />
           </Section>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ── 게임 공장 ──
+// game-factory 레벨 서버(game-factory-server)의 관리 API. 예전 game-factory.agonyang.com/admin 페이지를 옮겨 왔다.
+
+type GfCurveRow = { from: number; to: number; min: number; avg: number; max: number; new_gimmicks: string[] }
+type GfFactory = {
+  title?: string; stage: string; round?: number; verdict?: string; scores?: Record<string, number | null>
+  check?: { ok: boolean; level_count: number; gimmicks: unknown[]; curve: GfCurveRow[]; errors: string[] }
+  versions: number; art_approved?: boolean; web_built_at?: string; error?: string; open_issues?: number; reviewed_at?: string
+}
+type GfRun = { at: string; from: number; to: number; ok: boolean; log?: string; secs: number }
+type GfGame = {
+  slug: string; migrated: boolean; factory: GfFactory | null
+  generated_max?: number; bundled_packs?: number; server_packs?: number[]; max_played?: number; remaining?: number; threshold?: number
+  worker?: string; fail_until?: number; clears?: Record<string, number>; downloads?: Record<string, number>; runs?: GfRun[]
+}
+type GfState = {
+  now: number; synced_at: string | null; games: GfGame[]
+  system: { uptime_s: number; load: number[]; disk: { free: number; total: number } | null; worker_last_tick: number | null; worker_running: string | null }
+}
+type GfFeedback = { at: string; slug: string; text: string }
+
+const GF_TITLES: Record<string, string> = {
+  'penguin-ferry': '펭귄 페리', 'moon-cargo': '문 카고', 'frog-feast': '프로그 피스트', 'sprinkle-siege': '스프링클 시즈',
+  'kite-rush': '카이트 러시', 'frost-sort': '프로스트 소트', 'lantern-roll': '랜턴 롤',
+}
+const GF_STAGE: Record<string, string> = {
+  idle: '대기', concept: '기획', 'concept-gate': '컨셉 승인 대기', build: '개발', 'art-target': '아트 목표', 'art-gate': '아트 승인 대기',
+  'art-dev': '아트', check: '검사', review: '검수', fix: '수정', done: '완료', stopped: '중단',
+}
+const GF_WORKER: Record<string, [string, string]> = {
+  idle: ['여유 충분', '#4ade80'], generate: ['생성 대기', 'var(--warning)'], running: ['생성 중', 'var(--warning)'],
+  backoff: ['생성 실패 — 대기', '#f87171'], 'daily-cap': ['하루 상한 도달', 'var(--warning)'],
+}
+
+function gfAgo(t: string | number | null | undefined) {
+  if (!t) return '—'
+  const s = (Date.now() - new Date(t).getTime()) / 1000
+  if (s < 90) return '방금'
+  if (s < 5400) return Math.round(s / 60) + '분 전'
+  if (s < 172800) return Math.round(s / 3600) + '시간 전'
+  return Math.round(s / 86400) + '일 전'
+}
+const gfKst = (t: string | number) => new Date(t).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+const gfName = (slug: string, title?: string) => GF_TITLES[slug] || title || slug
+
+function Badge({ children, color }: { children: React.ReactNode; color?: string }) {
+  return (
+    <span className="text-xs px-2 py-1 rounded-md" style={{ border: '1px solid var(--card-border)', color: color || 'var(--foreground)' }}>
+      {children}
+    </span>
+  )
+}
+
+/** 레벨별 클리어 수 → 레벨 묶음 막대. 막대가 급히 낮아지는 곳이 이탈 지점. */
+function GfDropoff({ clears, maxLevel }: { clears: Record<string, number>; maxLevel: number }) {
+  const top = Math.max(maxLevel, ...Object.keys(clears).map(Number), 10)
+  const bucket = Math.max(10, Math.ceil(top / 60 / 10) * 10)
+  const bars: { from: number; n: number }[] = []
+  for (let from = 1; from <= top; from += bucket) {
+    let n = 0
+    for (let l = from; l < from + bucket; l++) n += clears[l] || 0
+    bars.push({ from, n: n / bucket })
+  }
+  const max = Math.max(...bars.map((b) => b.n), 1)
+  const w = 600 / bars.length
+  return (
+    <div>
+      <svg viewBox="0 0 600 120" preserveAspectRatio="none" className="w-full" style={{ height: 120 }} role="img" aria-label="레벨별 클리어 수">
+        {bars.map((b, i) => (
+          <rect key={i} x={i * w + 0.5} y={110 - (b.n / max) * 105} width={Math.max(w - 1, 1)} height={(b.n / max) * 105} fill="var(--accent)">
+            <title>{`${b.from}~${b.from + bucket - 1}레벨: 평균 ${b.n.toFixed(1)}회`}</title>
+          </rect>
+        ))}
+        <line x1="0" y1="110.5" x2="600" y2="110.5" stroke="var(--card-border)" />
+      </svg>
+      <div className="flex justify-between text-[11px]" style={{ color: 'var(--muted)' }}>
+        <span>1</span><span>{bucket}레벨 단위 · 막대에 마우스를 올리면 수치</span><span>{top}</span>
+      </div>
+    </div>
+  )
+}
+
+function GfFactoryPart({ f }: { f: GfFactory | null }) {
+  if (!f) return <p style={{ color: 'var(--muted)' }}>공장 요약 없음 — PC에서 tools/sync-server.sh 실행</p>
+  const c = f.check
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-2">
+        <Badge>{(GF_STAGE[f.stage] || f.stage) + (f.round ? ` · R${f.round}` : '')}</Badge>
+        {f.verdict
+          ? <Badge color={f.verdict === 'pass' ? '#4ade80' : f.verdict === 'fail' ? 'var(--warning)' : '#f87171'}>검수 {f.verdict}</Badge>
+          : <Badge>검수 전</Badge>}
+        {c ? (
+          <>
+            <Badge color={c.ok ? '#4ade80' : '#f87171'}>검사 {c.ok ? '통과' : '실패'}</Badge>
+            <Badge>레벨 {c.level_count}</Badge>
+            <Badge>기믹 {c.gimmicks.length}</Badge>
+          </>
+        ) : <Badge>검사 전</Badge>}
+        <Badge>버전 {f.versions}</Badge>
+        {f.art_approved && <Badge color="#4ade80">아트 승인</Badge>}
+        <Badge>웹 빌드 {f.web_built_at ? gfAgo(f.web_built_at) : '없음'}</Badge>
+      </div>
+      {f.error && <pre className="text-xs whitespace-pre-wrap" style={{ color: '#f87171' }}>{f.error}</pre>}
+      {f.scores && (
+        <div className="grid gap-x-3 gap-y-1 items-center text-sm" style={{ gridTemplateColumns: 'auto 1fr auto' }}>
+          {Object.entries(f.scores).map(([k, v]) => (
+            <div key={k} className="contents">
+              <span style={{ color: 'var(--muted)' }}>{k}</span>
+              <span className="h-2 rounded" style={{ background: 'var(--background)' }}>
+                <i className="block h-2 rounded" style={{ width: `${(v ?? 0) * 10}%`, background: 'var(--accent)' }} />
+              </span>
+              <b>{v ?? '—'}</b>
+            </div>
+          ))}
+        </div>
+      )}
+      {!!f.open_issues && <p className="text-sm" style={{ color: 'var(--muted)' }}>검수 지적 {f.open_issues}건 · {gfAgo(f.reviewed_at)}</p>}
+      {c && c.curve.length > 0 && (
+        <details>
+          <summary className="text-sm cursor-pointer">난이도 곡선·기믹 로드맵</summary>
+          <div className="mt-2 max-h-72 overflow-auto">
+            <DailyTable
+              rows={c.curve.map((r) => ({ range: `${r.from}~${r.to}`, moves: `${r.min} / ${r.avg} / ${r.max}`, gim: r.new_gimmicks.join(', ') }))}
+              columns={[{ key: 'range', label: '구간' }, { key: 'moves', label: '이동 수 min/avg/max' }, { key: 'gim', label: '새 기믹' }]}
+            />
+          </div>
+        </details>
+      )}
+      {c && c.errors.length > 0 && <pre className="text-xs whitespace-pre-wrap" style={{ color: '#f87171' }}>{c.errors.join('\n')}</pre>}
+    </div>
+  )
+}
+
+function GfServerPart({ g, now }: { g: GfGame; now: number }) {
+  if (!g.migrated) return <p style={{ color: 'var(--muted)' }}>아직 레벨 팩(1000레벨) 방식으로 이전되지 않음</p>
+  const clears = g.clears || {}
+  const totalClears = Object.values(clears).reduce((a, b) => a + b, 0)
+  const [wl, wc] = GF_WORKER[g.worker || ''] || [g.worker || '—', 'var(--foreground)']
+  const downloads = Object.entries(g.downloads || {}).sort((a, b) => Number(a[0]) - Number(b[0]))
+  const runs = g.runs || []
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="생성된 레벨" value={g.generated_max ?? 0} />
+        <StatCard label="최고 도달 레벨" value={g.max_played ?? 0} />
+        <StatCard label={`남은 레벨 (기준 ${g.threshold})`} value={g.remaining ?? 0} />
+        <StatCard label="총 클리어" value={totalClears.toLocaleString()} />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Badge color={wc}>생성기: {wl}</Badge>
+        <Badge>내장 팩 {g.bundled_packs}</Badge>
+        <Badge>서버 팩 {(g.server_packs || []).length}</Badge>
+        {(g.fail_until || 0) > now && <Badge color="#f87171">재시도 {gfKst(g.fail_until!)}</Badge>}
+      </div>
+      <p className="text-sm font-semibold">레벨별 클리어 (익명 집계)</p>
+      {totalClears ? <GfDropoff clears={clears} maxLevel={g.max_played ?? 0} /> : <p style={{ color: 'var(--muted)' }}>아직 기록 없음</p>}
+      <p className="text-sm font-semibold">팩 다운로드</p>
+      {downloads.length
+        ? <div className="flex flex-wrap gap-2">{downloads.map(([i, n]) => <Badge key={i}>#{i} {n}회</Badge>)}</div>
+        : <p style={{ color: 'var(--muted)' }}>없음</p>}
+      <p className="text-sm font-semibold">생성 기록</p>
+      {runs.length ? (
+        <div className="max-h-60 overflow-auto">
+          <DailyTable
+            rows={runs.map((r) => ({ at: gfKst(r.at), range: `${r.from}~${r.to}`, ok: r.ok ? '성공' : `실패${r.log ? ' — ' + r.log.slice(0, 200) : ''}`, secs: r.secs }))}
+            columns={[{ key: 'at', label: '시각' }, { key: 'range', label: '레벨' }, { key: 'ok', label: '결과' }, { key: 'secs', label: '초' }]}
+          />
+        </div>
+      ) : <p style={{ color: 'var(--muted)' }}>아직 생성 기록 없음</p>}
+    </div>
+  )
+}
+
+function GfFeedbackSection({ games }: { games: string[] }) {
+  const [slug, setSlug] = useState('')
+  const [items, setItems] = useState<GfFeedback[] | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let alive = true
+    const load = async () => {
+      try {
+        const json = await (await fetch(`/api/game-factory/feedback?slug=${encodeURIComponent(slug)}&limit=300`)).json()
+        if (!alive) return
+        if (json.error) setError(json.error)
+        else { setError(''); setItems(json) }
+      } catch (e) {
+        if (alive) setError(String(e))
+      }
+    }
+    load()
+    const t = setInterval(load, 30000)
+    return () => { alive = false; clearInterval(t) }
+  }, [slug])
+
+  return (
+    <Section title={`피드백${items ? ` (${items.length}건)` : ''}`}>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {['', ...games].map((s) => (
+          <button
+            key={s || 'all'}
+            onClick={() => setSlug(s)}
+            className="text-xs px-3 py-1 rounded-md"
+            style={{ background: slug === s ? 'var(--accent)' : 'var(--background)', color: slug === s ? '#fff' : 'var(--foreground)', border: '1px solid var(--card-border)' }}
+          >
+            {s ? gfName(s) : '전체'}
+          </button>
+        ))}
+      </div>
+      {error && <p style={{ color: '#f87171' }}>{error}</p>}
+      {items && items.length === 0 && <p style={{ color: 'var(--muted)' }}>(피드백 없음)</p>}
+      {items && items.length > 0 && (
+        <div className="max-h-[480px] overflow-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ color: 'var(--muted)' }} className="text-left">
+                <th className="pb-2 font-normal whitespace-nowrap pr-3">시각</th>
+                <th className="pb-2 font-normal whitespace-nowrap pr-3">게임</th>
+                <th className="pb-2 font-normal">내용</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((f, i) => (
+                <tr key={i} style={{ borderTop: '1px solid var(--card-border)' }} className="align-top">
+                  <td className="py-2 pr-3 whitespace-nowrap">{gfKst(f.at)}</td>
+                  <td className="py-2 pr-3 whitespace-nowrap">{gfName(f.slug)}</td>
+                  <td className="py-2 whitespace-pre-wrap break-words">{f.text}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function GameFactoryStats() {
+  const { data: s, error, loading, refresh } = useStats<GfState>('/api/game-factory/state')
+
+  // 예전 관리페이지처럼 30초마다 갱신한다. 이미 데이터가 있으면 로딩 문구 대신 기존 화면을 유지한다.
+  useEffect(() => {
+    const t = setInterval(refresh, 30000)
+    return () => clearInterval(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div className="flex flex-col gap-6">
+      <RefreshHeader onRefresh={refresh} />
+      {!s && <StatsState loading={loading} error={error} />}
+      {s && (
+        <>
+          {error && <p style={{ color: '#f87171' }}>{error}</p>}
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm" style={{ color: 'var(--muted)' }}>
+            <span>공장 동기화 {gfAgo(s.synced_at)}</span>
+            <span>서버 가동 {Math.round(s.system.uptime_s / 3600)}시간</span>
+            {s.system.disk && <span>디스크 여유 {(s.system.disk.free / 1e9).toFixed(1)}GB / {(s.system.disk.total / 1e9).toFixed(1)}GB</span>}
+            <span>생성기 확인 {gfAgo(s.system.worker_last_tick)}{s.system.worker_running ? ` · ${s.system.worker_running} 생성 중` : ''}</span>
+            <span>부하 {s.system.load.map((x) => x.toFixed(2)).join(' ')}</span>
+          </div>
+
+          <GfFeedbackSection games={s.games.filter((g) => g.migrated).map((g) => g.slug)} />
+
+          {s.games.map((g) => (
+            <Section key={g.slug} title={`${gfName(g.slug, g.factory?.title)} · ${g.slug}`}>
+              <div className="flex flex-col gap-5">
+                <GfFactoryPart f={g.factory} />
+                <div>
+                  <p className="text-sm font-semibold mb-2">레벨 서버</p>
+                  <GfServerPart g={g} now={s.now} />
+                </div>
+              </div>
+            </Section>
+          ))}
         </>
       )}
     </div>
