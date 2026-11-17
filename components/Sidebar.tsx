@@ -17,6 +17,7 @@ const secondary = [
   { href: '/bubblechat', label: 'bubbleChat', icon: '💬' },
   { href: '/hex21', label: 'Hex21', icon: '⬡' },
   { href: '/agonyang', label: '아고냥 메인', icon: '🏠' },
+  { href: '/cubrawl', label: 'Cubrawl', icon: '🎮' },
   { href: '/settings', label: '설정', icon: '⚙️' },
 ]
 

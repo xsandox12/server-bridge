@@ -17,6 +17,9 @@ services:
       - MINIPC_HOST=112.168.76.70
       # 멀티 네트워크 시 Next standalone이 컨테이너 hostname(특정 IP)에만 바인딩되는 문제 방지
       - HOSTNAME=0.0.0.0
+      # Cubrawl 운영 (app/cubrawl): cubrawl-stats 의 ADMIN_TOKEN 과 같은 값. 미니PC ~/server-bridge/.env 에 둔다 (저장소에 넣지 않음)
+      - CUBRAWL_ADMIN_TOKEN=${CUBRAWL_ADMIN_TOKEN:-}
+      - CUBRAWL_STATS_URL=http://cubrawl-stats:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

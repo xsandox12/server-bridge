@@ -1,0 +1,1302 @@
+[
+ {
+  "id": "skin_default",
+  "name": "기본 파랑",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_forest",
+  "name": "숲 사냥꾼",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_desert",
+  "name": "사막 여행자",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_berry",
+  "name": "딸기 우유",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_night",
+  "name": "밤 도둑",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_royal",
+  "name": "왕실 기사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_season1",
+  "name": "블록 마을 수호자",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_snow",
+  "name": "눈사람",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_bee",
+  "name": "꿀벌",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_pirate",
+  "name": "바다 해적",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_pumpkin",
+  "name": "호박 기사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_fairy",
+  "name": "숲 요정",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_neon",
+  "name": "사이버 네온",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_lava",
+  "name": "용암",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_rainbow",
+  "name": "무지개",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_sailor",
+  "name": "선원",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_prisoner",
+  "name": "탈옥수",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_tiger",
+  "name": "호랑이",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_candy",
+  "name": "사탕 줄무늬",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_referee",
+  "name": "심판",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_zebra",
+  "name": "얼룩말",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_lumber",
+  "name": "나무꾼",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_picnic",
+  "name": "소풍 체크",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_farmer",
+  "name": "농부",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_mechanic",
+  "name": "정비공",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_office",
+  "name": "회사원",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_spy",
+  "name": "비밀 요원",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_chef",
+  "name": "요리사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_general",
+  "name": "장군",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_robot",
+  "name": "로봇",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_hero",
+  "name": "슈퍼 히어로",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_sheriff",
+  "name": "보안관",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_doctor",
+  "name": "의사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_lover",
+  "name": "사랑꾼",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_valentine",
+  "name": "발렌타인",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_panda",
+  "name": "판다",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_fox",
+  "name": "여우",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_penguin",
+  "name": "펭귄",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_bear",
+  "name": "곰돌이",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_frog",
+  "name": "개구리",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_knight_iron",
+  "name": "철갑 기사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_samurai",
+  "name": "사무라이",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_gold_armor",
+  "name": "황금 갑옷",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_vampire",
+  "name": "흡혈귀",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_wizard",
+  "name": "마법사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_king",
+  "name": "임금님",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_ladybug",
+  "name": "무당벌레",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_mushroom",
+  "name": "버섯",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_dalmatian",
+  "name": "달마시안",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_galaxy",
+  "name": "은하수",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_storm",
+  "name": "폭풍",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_racer",
+  "name": "레이서",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_boxer",
+  "name": "권투 선수",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_astronaut",
+  "name": "우주 비행사",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_diver",
+  "name": "잠수부",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_winter",
+  "name": "겨울 스웨터",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_school",
+  "name": "교복",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_pageant",
+  "name": "미인 대회",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_champion",
+  "name": "챔피언",
+  "kind": "스킨"
+ },
+ {
+  "id": "skin_ninja",
+  "name": "닌자",
+  "kind": "스킨"
+ },
+ {
+  "id": "emote_hello",
+  "name": "안녕!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_gg",
+  "name": "GG",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_nice",
+  "name": "좋아!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_sorry",
+  "name": "미안~",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_dance",
+  "name": "춤춰요~",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_heart",
+  "name": "사랑해요",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_taunt",
+  "name": "덤벼!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_victory",
+  "name": "승리!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_season1",
+  "name": "블록 최고!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_clap",
+  "name": "짝짝짝",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_thanks",
+  "name": "고마워!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_lol",
+  "name": "하하하",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_night",
+  "name": "잘 자요",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_tease",
+  "name": "메롱~",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_best",
+  "name": "최고야!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_hooray",
+  "name": "만세!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_wow",
+  "name": "와우!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_what",
+  "name": "뭐지?",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_crown",
+  "name": "내가 왕이다",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_thumb",
+  "name": "엄지 척!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_angry",
+  "name": "화났어!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_cry",
+  "name": "흑흑",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_sleepy",
+  "name": "졸려...",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_rich",
+  "name": "부자다!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_flower",
+  "name": "꽃 받아요",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_sunny",
+  "name": "날씨 좋다~",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_smile",
+  "name": "히히",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_bravo",
+  "name": "브라보!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_love",
+  "name": "하트 뿅뿅",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_backflip",
+  "name": "공중제비!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_respect",
+  "name": "존경합니다",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_spooky",
+  "name": "으스스~",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_doomed",
+  "name": "끝났다...",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_fire",
+  "name": "불타오른다!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_zap",
+  "name": "찌릿!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_sing",
+  "name": "랄라~",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_lookout",
+  "name": "어디 있지?",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_hurry",
+  "name": "빨리빨리!",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_shiny",
+  "name": "반짝반짝",
+  "kind": "감정표현"
+ },
+ {
+  "id": "emote_bigbow",
+  "name": "감사합니다",
+  "kind": "감정표현"
+ },
+ {
+  "id": "fx_none",
+  "name": "기본",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_confetti",
+  "name": "색종이",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_flame",
+  "name": "불꽃",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_gold",
+  "name": "금빛",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_hearts",
+  "name": "하트",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_season1",
+  "name": "시즌 1 불꽃놀이",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_ice",
+  "name": "얼음",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_poison",
+  "name": "독",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_candy",
+  "name": "사탕",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_lightning",
+  "name": "번개",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_stardust",
+  "name": "별가루",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_shadow",
+  "name": "그림자",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_shockwave",
+  "name": "충격파",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_ring_fire",
+  "name": "불의 고리",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_ring_toxic",
+  "name": "독 고리",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_fountain",
+  "name": "분수",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_volcano",
+  "name": "화산",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_geyser_gold",
+  "name": "황금 분수",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_tornado",
+  "name": "회오리",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_galaxy",
+  "name": "은하 소용돌이",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_leafstorm",
+  "name": "낙엽 소용돌이",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_rain",
+  "name": "비구름",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_coinrain",
+  "name": "동전 비",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_snowfall",
+  "name": "함박눈",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_starburst",
+  "name": "별빛 폭발",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_laser",
+  "name": "레이저 쇼",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_sunburst",
+  "name": "햇살",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_heart_pop",
+  "name": "하트 뿅",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_heart_blue",
+  "name": "파란 하트",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_star_pop",
+  "name": "별 뿅",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_star_purple",
+  "name": "보라 별",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_skull_pop",
+  "name": "해골",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_skull_fire",
+  "name": "불타는 해골",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_crown_pop",
+  "name": "왕관",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_smile_pop",
+  "name": "스마일",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_smile_pink",
+  "name": "분홍 스마일",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_tower",
+  "name": "큐브 탑",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_tower_ice",
+  "name": "얼음 탑",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_note_pop",
+  "name": "음표",
+  "kind": "이펙트"
+ },
+ {
+  "id": "fx_note_gold",
+  "name": "황금 음표",
+  "kind": "이펙트"
+ },
+ {
+  "id": "wings_none",
+  "name": "없음",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_angel",
+  "name": "천사 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_bat",
+  "name": "박쥐 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_butterfly",
+  "name": "나비 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_fairy",
+  "name": "요정 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_dragon",
+  "name": "용 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_phoenix",
+  "name": "불사조 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_leaf",
+  "name": "나뭇잎 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_autumn",
+  "name": "단풍 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_cloud",
+  "name": "구름 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_storm_cloud",
+  "name": "먹구름 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_cotton",
+  "name": "솜사탕 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_mech",
+  "name": "기계 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_gold_mech",
+  "name": "황금 기계 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_rust",
+  "name": "녹슨 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_ice",
+  "name": "얼음 결정 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_amethyst",
+  "name": "자수정 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_star",
+  "name": "별 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_star_night",
+  "name": "밤하늘 별 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_eagle",
+  "name": "독수리 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_raven",
+  "name": "까마귀 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_peacock",
+  "name": "공작 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_petal",
+  "name": "꽃잎 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_lotus",
+  "name": "연꽃 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_sunflower",
+  "name": "해바라기 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_thunder",
+  "name": "번개 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_red_bolt",
+  "name": "붉은 번개 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_bone",
+  "name": "뼈 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_dark_bone",
+  "name": "검은 뼈 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_heart",
+  "name": "하트 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_heart_gold",
+  "name": "황금 하트 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_fin",
+  "name": "물고기 지느러미",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_shark",
+  "name": "상어 지느러미",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_goldfish",
+  "name": "금붕어 지느러미",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_rainbow",
+  "name": "무지개 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_pastel",
+  "name": "파스텔 무지개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_web",
+  "name": "거미줄 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_neon_web",
+  "name": "네온 거미줄",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_ghost",
+  "name": "유령 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "wings_ice_dragon",
+  "name": "얼음 용 날개",
+  "kind": "날개"
+ },
+ {
+  "id": "acc_none",
+  "name": "없음",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_glasses",
+  "name": "둥근 안경",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_bandage",
+  "name": "반창고",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_mustache",
+  "name": "콧수염",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_bowtie",
+  "name": "나비넥타이",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_shades",
+  "name": "선글라스",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_eyepatch",
+  "name": "해적 안대",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_scarf",
+  "name": "빨간 목도리",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_necklace",
+  "name": "금 목걸이",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_mask",
+  "name": "마스크",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_mask_black",
+  "name": "검은 마스크",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_heart_glasses",
+  "name": "하트 안경",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_star_glasses",
+  "name": "별 안경",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_party_glasses",
+  "name": "파티 안경",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_goggles",
+  "name": "비행 고글",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_ski",
+  "name": "스키 고글",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_beard",
+  "name": "덥수룩 수염",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_santa_beard",
+  "name": "산타 수염",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_wizard_beard",
+  "name": "회색 수염",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_blush",
+  "name": "볼터치",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_tiger_cheek",
+  "name": "호랑이 볼무늬",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_ribbon",
+  "name": "빨간 리본",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_ribbon_blue",
+  "name": "파란 리본",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_necktie",
+  "name": "넥타이",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_necktie_gold",
+  "name": "금색 넥타이",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_medal",
+  "name": "금메달",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_medal_silver",
+  "name": "은메달",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_fangs",
+  "name": "흡혈귀 송곳니",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_gasmask",
+  "name": "방독면",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_monocle",
+  "name": "외눈 안경",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_facepack",
+  "name": "마스크팩",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_mud_pack",
+  "name": "진흙 팩",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_ninja_mask",
+  "name": "닌자 복면",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_clown_nose",
+  "name": "피에로 코",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_pig_nose",
+  "name": "돼지 코",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_pearls",
+  "name": "진주 목걸이",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_clover",
+  "name": "클로버 배지",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_headset",
+  "name": "헤드셋 마이크",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_black_pearls",
+  "name": "흑진주 목걸이",
+  "kind": "액세서리"
+ },
+ {
+  "id": "acc_scarf_blue",
+  "name": "파란 목도리",
+  "kind": "액세서리"
+ },
+ {
+  "id": "trail_none",
+  "name": "없음",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_sparkle",
+  "name": "반짝이 별",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_hearts",
+  "name": "하트",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_snow",
+  "name": "눈송이",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_flame",
+  "name": "불꽃",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_bubble",
+  "name": "거품",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_rainbow",
+  "name": "무지개",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_spiral",
+  "name": "나선 별빛",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_spiral_blue",
+  "name": "푸른 나선",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_dna",
+  "name": "DNA",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_leaves",
+  "name": "나뭇잎",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_maple",
+  "name": "단풍잎",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_ginkgo",
+  "name": "은행잎",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_smoke",
+  "name": "연기",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_dark_smoke",
+  "name": "검은 연기",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_pink_smoke",
+  "name": "분홍 연기",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_toxic",
+  "name": "독가스",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_comet",
+  "name": "혜성",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_meteor",
+  "name": "유성",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_neon_comet",
+  "name": "네온 혜성",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_footprints",
+  "name": "찍힌 발자국",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_snow_prints",
+  "name": "눈 발자국",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_paw",
+  "name": "젖은 발자국",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_glow_prints",
+  "name": "빛나는 발자국",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_coins",
+  "name": "동전",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_gems",
+  "name": "보석",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_silver",
+  "name": "은화",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_sakura",
+  "name": "벚꽃잎",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_rose",
+  "name": "장미 꽃잎",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_lavender",
+  "name": "라벤더",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_zap",
+  "name": "전기",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_red_zap",
+  "name": "붉은 전기",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_purple_zap",
+  "name": "보라 전기",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_fireflies",
+  "name": "반딧불",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_ash",
+  "name": "잿불",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_pollen",
+  "name": "꽃가루",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_bubble_gum",
+  "name": "풍선껌",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_pastel",
+  "name": "파스텔",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_blue_hearts",
+  "name": "파란 하트",
+  "kind": "발자국"
+ },
+ {
+  "id": "trail_gold_hearts",
+  "name": "황금 하트",
+  "kind": "발자국"
+ }
+]
