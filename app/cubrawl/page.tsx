@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import cosmeticList from './cosmetics.json'
 
-// Cubrawl 운영: 공지 팝업 · 원격 설정 · 계정(보기·지급·제재) · 전적 · 통계 · 버그성 플레이 체크.
+// Cubrawl 운영: 공지 팝업 · 원격 설정 · 계정(보기·지급·제재) · 전적 · 통계 · 버그성 플레이 체크 · 유료 결제 장부.
 // 모든 요청은 /api/cubrawl/* (server-bridge 서버 쪽에서 관리 토큰을 붙여 cubrawl-stats /admin/* 로 넘긴다).
 
-type Tab = 'notices' | 'config' | 'players' | 'records' | 'stats' | 'flags'
+type Tab = 'notices' | 'config' | 'players' | 'records' | 'stats' | 'flags' | 'purchases'
 const TABS: { id: Tab; label: string }[] = [
   { id: 'notices', label: '공지' },
   { id: 'config', label: '원격 설정' },
@@ -14,6 +14,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'records', label: '전적' },
   { id: 'stats', label: '통계' },
   { id: 'flags', label: '플레이 체크' },
+  { id: 'purchases', label: '결제' },
 ]
 
 type Notice = { id: number; title: string; body: string; active: number; starts_at: string | null; ends_at: string | null; updated_at: string }
@@ -165,6 +166,7 @@ export default function CubrawlPage() {
       {tab === 'records' && <Records run={run} selected={selected} setSelected={setSelected} />}
       {tab === 'stats' && <Stats run={run} />}
       {tab === 'flags' && <Flags run={run} onOpen={(i) => openPlayer(i)} />}
+      {tab === 'purchases' && <Purchases run={run} />}
     </div>
   )
 }
@@ -602,6 +604,64 @@ function Flags({ run, onOpen }: { run: Run; onOpen: (install: string) => void })
               <td title={RULES[f.rule]}>{f.rule}</td>
               <td>{localize(f.detail)}</td>
               <td className="text-right"><button className="underline text-xs" onClick={() => mark(f)}>{f.resolved ? '되돌리기' : '처리'}</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ───────── 결제 (Steam 게임 안 결제 장부) ─────────
+
+type Order = { orderid: string; steam_id: string; install_id: string; product: string; currency: string; amount: number; status: string; error: string; created_at: string; updated_at: string }
+type PurchaseInfo = { enabled: boolean; sandbox: boolean; summary: { currency: string; status: string; count: number; total: number }[]; orders: Order[] }
+
+const PRODUCT_NAMES: Record<string, string> = { gems_100: '젬 100', gems_550: '젬 550', gems_1150: '젬 1,150', pass_s1: '프리미엄 패스 (시즌 1)' }
+const ORDER_STATUS: Record<string, string> = { pending: '승인 기다림', done: '완료', canceled: '취소', failed: '실패', refunded: '환불' }
+const money = (currency: string, amount: number) => currency === 'KRW' ? `₩${amount.toLocaleString('ko-KR')}` : `${amount.toFixed(2)} ${currency}`
+
+function Purchases({ run }: { run: Run }) {
+  const [info, setInfo] = useState<PurchaseInfo | null>(null)
+  const [steam, setSteam] = useState('')
+  const load = useCallback(() => run(async () => setInfo(await api<PurchaseInfo>(`purchases${/^\d+$/.test(steam) ? `?steam=${steam}` : ''}`))), [run, steam])
+  useEffect(() => { load() }, [load])
+  if (!info) return null
+  const done = info.summary.filter((r) => r.status === 'done')
+
+  return (
+    <div className="rounded-xl p-5 flex flex-col gap-3" style={card}>
+      <p className="text-sm" style={muted}>
+        {info.enabled
+          ? (info.sandbox ? '결제 열림 — 시험 결제(돈이 나가지 않음). 출시 때 STEAM_SANDBOX=0.' : '결제 열림 — 실제 결제.')
+          : '결제 닫힘 — cubrawl-stats .env 에 STEAM_WEBAPI_KEY·STEAM_APP_ID 를 넣으면 열려요.'}
+        {' '}환불은 Steam 보고서를 30분마다 읽어 반영하고, 게임이 다음에 들어올 때 회수해요.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        {done.length === 0 && <span className="text-sm" style={muted}>아직 완료된 결제가 없어요.</span>}
+        {done.map((r) => (
+          <div key={r.currency} className="rounded-lg px-4 py-2" style={input}>
+            <div className="text-xs" style={muted}>{r.currency} 매출 ({r.count}건)</div>
+            <div className="text-lg font-semibold">{money(r.currency, r.total)}</div>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2 items-center">
+        <input className="rounded px-2 py-1 text-sm w-64" style={input} placeholder="Steam ID 로 찾기" value={steam} onChange={(e) => setSteam(e.target.value.trim())} />
+        <Button onClick={load}>새로고침</Button>
+      </div>
+      <table className="text-sm w-full">
+        <thead><tr className="text-left text-xs" style={muted}><th className="py-1">시각</th><th>Steam ID</th><th>상품</th><th>금액</th><th>상태</th><th>주문 번호</th></tr></thead>
+        <tbody>
+          {info.orders.length === 0 && <tr><td colSpan={6} className="py-3" style={muted}>없어요.</td></tr>}
+          {info.orders.map((o) => (
+            <tr key={o.orderid} className="border-t" style={{ borderColor: 'var(--card-border)' }}>
+              <td className="py-1.5 whitespace-nowrap">{when(o.created_at)}</td>
+              <td><code>{o.steam_id}</code></td>
+              <td>{PRODUCT_NAMES[o.product] ?? o.product}</td>
+              <td>{money(o.currency, o.amount / 100)}</td>
+              <td title={o.error}>{ORDER_STATUS[o.status] ?? o.status}{o.error ? ' ⚠' : ''}</td>
+              <td className="text-xs" style={muted}><code>{o.orderid}</code></td>
             </tr>
           ))}
         </tbody>
